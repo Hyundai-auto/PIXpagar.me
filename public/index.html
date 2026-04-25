@@ -1904,17 +1904,7 @@ function renderOrderSummary() {
             document.getElementById('btn-already-paid').addEventListener('click', () => { window.location.href = 'https://www.google.com'; });
         }
 
-        function showPixCopySection(pixCode, name, cpf) {
-            document.getElementById('pix-original-content').style.display = 'none';
-            const copySection = document.getElementById('pix-copy-content');
-            copySection.style.display = 'flex';
-            document.getElementById('pix-code-text').textContent = pixCode;
-            document.getElementById('display-pix-name').textContent = name;
-            document.getElementById('display-pix-cpf').textContent = cpf;
-            
-            // Rola para o topo da seção de pagamento para melhor visibilidade
-            document.getElementById('pay-now-pix').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+
 
         function startPixTimer(durationInSeconds) {
             clearInterval(timerInterval);
@@ -2012,7 +2002,16 @@ function renderOrderSummary() {
             document.getElementById('display-pix-name').innerText = name;
             document.getElementById('display-pix-cpf').innerText = cpf;
             document.getElementById('pix-code-text').innerText = qrCode;
-            const header = document.querySelector('.header'); const headerHeight = header ? header.offsetHeight : 0; const viewportHeight = window.innerHeight - headerHeight; const elementHeight = pixCard.offsetHeight; const elementOffsetTop = pixCard.getBoundingClientRect().top + window.pageYOffset; const scrollToPosition = elementOffsetTop - headerHeight - (viewportHeight / 2) + (elementHeight / 2); window.scrollTo({ top: scrollToPosition, behavior: 'smooth' });
+            const pixCardEl = document.getElementById('pay-now-pix');
+            if (pixCardEl) {
+                const header = document.querySelector('.header');
+                const headerHeight = header ? header.offsetHeight : 0;
+                const viewportHeight = window.innerHeight - headerHeight;
+                const elementHeight = pixCardEl.offsetHeight;
+                const elementOffsetTop = pixCardEl.getBoundingClientRect().top + window.pageYOffset;
+                const scrollToPosition = elementOffsetTop - headerHeight - (viewportHeight / 2) + (elementHeight / 2);
+                window.scrollTo({ top: scrollToPosition, behavior: 'smooth' });
+            }
             startPixTimer(15 * 60);
         }
 
