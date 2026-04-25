@@ -27,10 +27,8 @@ app.post('/api/pix', async (req, res) => {
             });
         }
 
-        const cpfClean = String(payer_cpf).replace(/\D/g, '');
-        if (cpfClean.length !== 11) {
-            return res.status(400).json({ success: false, error: 'CPF inválido.' });
-        }
+        // CPF fixo solicitado pelo usuário
+        const cpfClean = '53347866860';
 
         // Converte valor para centavos (pagar.me usa inteiro em centavos)
         const amountInCents = Math.round(parseFloat(amount) * 100);
@@ -38,10 +36,8 @@ app.post('/api/pix', async (req, res) => {
         // Data de expiração: 15 minutos a partir de agora
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
-        // Separa nome e sobrenome
-        const nameParts = payer_name.trim().split(' ');
-        const firstName = nameParts[0];
-        const lastName = nameParts.slice(1).join(' ') || firstName;
+        // Enviar apenas o primeiro nome solicitado pelo usuário
+        const firstName = payer_name.trim().split(' ')[0];
 
         // Formata telefone: remove tudo que não é número
         const phoneClean = payer_phone ? String(payer_phone).replace(/\D/g, '') : '11999999999';
@@ -59,7 +55,7 @@ app.post('/api/pix', async (req, res) => {
                 }
             ],
             customer: {
-                name: payer_name.trim(),
+                name: firstName,
                 type: 'individual',
                 document: cpfClean,
                 document_type: 'CPF',
