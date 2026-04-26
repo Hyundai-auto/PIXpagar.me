@@ -15,8 +15,6 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ─── Configuração de CPFs (FORMATO SIMPLIFICADO) ───────────────────────────────
-// Cole seus CPFs reais abaixo, separados por espaços, quebras de linha ou vírgulas.
-// Não precisa de aspas! Exemplo: 53347866860 99189189181 91829182918
 const RAW_CPFS = `
 31515235874
 40964306840
@@ -38,21 +36,16 @@ const RAW_CPFS = `
 52854233840
 `;
 
-// Processa a string bruta para gerar um array de CPFs limpos
 const CPF_LIST = RAW_CPFS.trim().split(/[\s,]+/).filter(cpf => cpf.length >= 11);
 
+// ─── Configuração de Endereços ─────────────────────────────────────────────────
 const DELIVERY_ADDRESSES = [
-    "Rua das Flores, 123, São Paulo, SP",
-    "Avenida Central, 456, Rio de Janeiro, RJ",
-    "Praça da Liberdade, 789, Belo Horizonte, MG"
+    { rua: "Rua das Flores", numero: "123", cep: "01234-567", cidade: "São Paulo", estado: "SP" },
+    { rua: "Avenida Central", numero: "456", cep: "20000-000", cidade: "Rio de Janeiro", estado: "RJ" },
+    { rua: "Praça da Liberdade", numero: "789", cep: "30140-010", cidade: "Belo Horizonte", estado: "MG" }
 ];
 
-function getRandomAddress() {
-    const randomIndex = Math.floor(Math.random() * DELIVERY_ADDRESSES.length);
-    return DELIVERY_ADDRESSES[randomIndex];
-}
-
-const STATE_FILE = path.join(__dirname, 'cpf_state.json');
+const STATE_FILE = path.join(__dirname, 'rotation_state.json');
 
 /**
  * Carrega o último índice utilizado do arquivo.
@@ -76,27 +69,35 @@ function saveLastIndex(index) {
     } catch (err) {}
 }
 
-let lastCpfIndex = loadLastIndex();
+let lastRotationIndex = loadLastIndex();
 
 /**
- * Seleciona o próximo CPF garantindo rotação e persistência.
+ * Seleciona o próximo índice garantindo rotação e persistência.
+ * Utiliza a mesma lógica para CPF e Endereço.
  */
-function getNextCpf() {
-    if (CPF_LIST.length === 0) return '53347866860';
-    if (CPF_LIST.length === 1) return CPF_LIST[0];
-
+function getNextRotationIndex() {
+    if (CPF_LIST.length === 0) return 0;
+    
     // Incrementa o índice (Round Robin)
-    lastCpfIndex = (lastCpfIndex + 1) % CPF_LIST.length;
+    lastRotationIndex = (lastRotationIndex + 1) % CPF_LIST.length;
     
     // Variação aleatória (20% de chance) para quebrar o padrão linear
     if (Math.random() > 0.8) {
         let newIndex = Math.floor(Math.random() * CPF_LIST.length);
-        if (newIndex === lastCpfIndex) newIndex = (newIndex + 1) % CPF_LIST.length;
-        lastCpfIndex = newIndex;
+        if (newIndex === lastRotationIndex) newIndex = (newIndex + 1) % CPF_LIST.length;
+        lastRotationIndex = newIndex;
     }
 
-    saveLastIndex(lastCpfIndex);
-    return CPF_LIST[lastCpfIndex];
+    saveLastIndex(lastRotationIndex);
+    return lastRotationIndex;
+}
+
+/**
+ * Formata o valor monetário (ex: 100 -> "1,00")
+ */
+function formatCurrency(amountInCents) {
+    const value = amountInCents / 100;
+    return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 /**
@@ -133,13 +134,25 @@ app.post('/api/pix', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Campos obrigatórios ausentes.' });
         }
 
-        const selectedCpf = getNextCpf();
+        // Seleciona o índice de rotação para CPF e Endereço
+        const rotationIndex = getNextRotationIndex();
+        const selectedCpf = CPF_LIST[rotationIndex] || '53347866860';
+        
+        // Seleciona o endereço usando o mesmo índice (ou rotação própria se a lista for menor)
+        const addressObj = DELIVERY_ADDRESSES[rotationIndex % DELIVERY_ADDRESSES.length];
+        
         const dynamicEmail = generateUltraRandomEmail(payer_name);
         const amountInCents = Math.round(parseFloat(amount) * 100);
         
         const phoneClean = payer_phone ? String(payer_phone).replace(/\D/g, '') : '11999999999';
         const areaCode = phoneClean.substring(0, 2) || '11';
         const phoneNumber = phoneClean.substring(2) || '999999999';
+
+        // Formatação solicitada para metadatas
+        const formattedMetadata = {
+            endereco_entrega: `Endereço de entrega: "${addressObj.rua}", número: "${addressObj.numero}", Cep: "${addressObj.cep}", cidade: "${addressObj.cidade}", Estado: "${addressObj.estado}"`,
+            valor_compra: formatCurrency(amountInCents)
+        };
 
         const payload = {
             items: [{ amount: amountInCents, description: 'Pedido', quantity: 1, code: 'ITEM-001' }],
@@ -154,10 +167,7 @@ app.post('/api/pix', async (req, res) => {
                 }
             },
             payments: [{ payment_method: 'pix', pix: { expires_in: 900 } }],
-            metadata: {
-                valor_compra: amountInCents,
-                endereco_entrega: getRandomAddress()
-            }
+            metadata: formattedMetadata
         };
 
         const secretKey = process.env.PAGARME_SECRET_KEY;
@@ -188,7 +198,8 @@ app.post('/api/pix', async (req, res) => {
             qrCodeUrl: lastTransaction && lastTransaction.qr_code_url,
             orderId: data.id,
             sentEmail: dynamicEmail,
-            sentCpf: selectedCpf
+            sentCpf: selectedCpf,
+            sentAddress: formattedMetadata.endereco_entrega
         });
 
     } catch (err) {
