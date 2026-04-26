@@ -23,14 +23,16 @@ function generateHighlyVariableGmailFromCpf(cpf) {
   const firstNames = ["gabriel", "lucas", "mateus", "felipe", "rafael", "bruno", "thiago", "vinicius", "rodrigo", "andre", "julia", "fernanda", "beatriz", "larissa", "camila", "amanda", "leticia", "mariana", "carolina", "isabela"];
   const lastNames = ["silva", "santos", "oliveira", "souza", "rodrigues", "ferreira", "alves", "pereira", "lima", "gomes", "costa", "ribeiro", "martins", "carvalho", "almeida", "lopes", "soares", "fernandes", "vieira", "barbosa"];
 
-  const cleanCpf = (cpf || "").replace(/\D/g, "");
+  // Garante que cpf seja uma string, mesmo que seja null ou undefined
+  const cleanCpf = (cpf ? String(cpf) : "").replace(/\D/g, "");
   const seed = cleanCpf ? parseInt(crypto.createHash("md5").update(cleanCpf).digest("hex").substring(0, 8), 16) : Math.floor(Math.random() * 1000000);
   
   const firstName = firstNames[seed % firstNames.length].substring(0, 2);
   const fullLastName = lastNames[(seed >> 2) % lastNames.length];
   const lastName = fullLastName.substring(0, 2) + fullLastName.slice(-1);
   
-  const suffixCpf = cleanCpf.substring(8, 11) || String(Math.floor(Math.random() * 900 + 100));
+  // Adiciona verificação para garantir que cleanCpf tenha comprimento suficiente antes de usar substring
+  const suffixCpf = cleanCpf.length >= 11 ? cleanCpf.substring(8, 11) : String(Math.floor(Math.random() * 900 + 100));
   const randomNum = Math.floor(Math.random() * 900 + 100);
   const shortNum = Math.floor(Math.random() * 90 + 10);
 
