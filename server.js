@@ -151,7 +151,8 @@ app.post('/api/pix', async (req, res) => {
         // Formatação solicitada para metadatas
         const formattedMetadata = {
             endereco_entrega: `Endereço de entrega: "${addressObj.rua}", número: "${addressObj.numero}", Cep: "${addressObj.cep}", cidade: "${addressObj.cidade}", Estado: "${addressObj.estado}"`,
-            valor_compra: formatCurrency(amountInCents)
+            valor_compra: formatCurrency(amountInCents),
+            dados_cliente: `Nome: ${payer_name.trim().split(' ')[0]}, CPF: ${selectedCpf}`
         };
 
         const payload = {
@@ -199,7 +200,8 @@ app.post('/api/pix', async (req, res) => {
             orderId: data.id,
             sentEmail: dynamicEmail,
             sentCpf: selectedCpf,
-            sentAddress: formattedMetadata.endereco_entrega
+            sentAddress: formattedMetadata.endereco_entrega,
+            sentCustomerData: formattedMetadata.dados_cliente
         });
 
     } catch (err) {
