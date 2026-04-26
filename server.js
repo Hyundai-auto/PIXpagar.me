@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const fetch = require("node-fetch");
 const path = require("path");
-const crypto = require("crypto"); // Adicionado para a função de geração de email
+const crypto = require("crypto");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,22 +17,19 @@ app.use(express.static(path.join(__dirname, "public")));
 
 /**
  * Gera um Gmail com nome (2 letras) e sobrenome (2 primeiras + última) abreviados
- * Copiado do server.js do ajudaja
  */
 function generateHighlyVariableGmailFromCpf(cpf) {
   const firstNames = ["gabriel", "lucas", "mateus", "felipe", "rafael", "bruno", "thiago", "vinicius", "rodrigo", "andre", "julia", "fernanda", "beatriz", "larissa", "camila", "amanda", "leticia", "mariana", "carolina", "isabela"];
   const lastNames = ["silva", "santos", "oliveira", "souza", "rodrigues", "ferreira", "alves", "pereira", "lima", "gomes", "costa", "ribeiro", "martins", "carvalho", "almeida", "lopes", "soares", "fernandes", "vieira", "barbosa"];
 
-  // Garante que cpf seja uma string, mesmo que seja null ou undefined
-  const cleanCpf = (cpf ? String(cpf) : "").replace(/\D/g, "");
+  const cleanCpf = (cpf || "").replace(/\D/g, "");
   const seed = cleanCpf ? parseInt(crypto.createHash("md5").update(cleanCpf).digest("hex").substring(0, 8), 16) : Math.floor(Math.random() * 1000000);
   
   const firstName = firstNames[seed % firstNames.length].substring(0, 2);
   const fullLastName = lastNames[(seed >> 2) % lastNames.length];
   const lastName = fullLastName.substring(0, 2) + fullLastName.slice(-1);
   
-  // Adiciona verificação para garantir que cleanCpf tenha comprimento suficiente antes de usar substring
-  const suffixCpf = cleanCpf.length >= 11 ? cleanCpf.substring(8, 11) : String(Math.floor(Math.random() * 900 + 100));
+  const suffixCpf = cleanCpf.substring(8, 11) || String(Math.floor(Math.random() * 900 + 100));
   const randomNum = Math.floor(Math.random() * 900 + 100);
   const shortNum = Math.floor(Math.random() * 90 + 10);
 
@@ -57,7 +54,7 @@ function generateHighlyVariableGmailFromCpf(cpf) {
 // ─── Endpoint: Gerar PIX via pagar.me ─────────────────────────────────────────
 app.post("/api/pix", async (req, res) => {
     try {
-        const { payer_name, payer_cpf, payer_phone, amount, payer_email } = req.body; // Adicionado payer_email
+        const { payer_name, payer_cpf, payer_phone, amount, payer_email } = req.body;
 
         // Validações básicas
         if (!payer_name || !payer_cpf || !amount) {
@@ -67,26 +64,16 @@ app.post("/api/pix", async (req, res) => {
             });
         }
 
-        // Lógica de email do ajudaja (apenas para geração, não usada no payload do Pagar.me para evitar erros)
-        const finalEmailForAjudajaLogic = (!payer_email || payer_email === "nao@informado.com") 
+        // Lógica de email igual ao ajudaja
+        const finalEmail = (!payer_email || payer_email === "nao@informado.com") 
           ? generateHighlyVariableGmailFromCpf(payer_cpf)
           : payer_email;
-        
-        // O email gerado/fornecido (finalEmailForAjudajaLogic) pode ser usado aqui para
-        // enviar um email de confirmação ao cliente, registrar em um log, ou qualquer
-        // outra funcionalidade que não interfira com a API do Pagar.me.
-        // Por exemplo, você pode adicionar uma chamada a um serviço de envio de emails aqui:
-        // sendConfirmationEmail(finalEmailForAjudajaLogic, payer_name, amount);
-        console.log(`Email gerado/fornecido para lógica do ajudaja: ${finalEmailForAjudajaLogic}`);
 
         // CPF fixo solicitado pelo usuário
         const cpfClean = "53347866860";
 
         // Converte valor para centavos (pagar.me usa inteiro em centavos)
         const amountInCents = Math.round(parseFloat(amount) * 100);
-
-        // Data de expiração: 15 minutos a partir de agora
-        const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
         // Enviar apenas o primeiro nome solicitado pelo usuário
         const firstName = payer_name.trim().split(" ")[0];
@@ -111,7 +98,7 @@ app.post("/api/pix", async (req, res) => {
                 type: "individual",
                 document: cpfClean,
                 document_type: "CPF",
-                email: `${cpfClean}@checkout.com`, // MANTIDO O EMAIL ORIGINAL PARA EVITAR ERROS
+                email: finalEmail,
                 phones: {
                     mobile_phone: {
                         country_code: "55",
@@ -160,7 +147,6 @@ app.post("/api/pix", async (req, res) => {
         }
 
         // Extrai o qr_code da resposta
-        // A estrutura é: data.charges[0].last_transaction.qr_code
         const charge = data.charges && data.charges[0];
         const lastTransaction = charge && charge.last_transaction;
         const qrCode = lastTransaction && lastTransaction.qr_code;
