@@ -3,7 +3,6 @@ const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const path = require('path');
-const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,46 +14,10 @@ app.use(express.json());
 // Serve o frontend estático (index.html e demais arquivos)
 app.use(express.static(path.join(__dirname, 'public')));
 
-/**
- * Gera um Gmail com nome (2 letras) e sobrenome (2 primeiras + última) abreviados
- */
-function generateHighlyVariableGmailFromCpf(cpf) {
-  const firstNames = ["gabriel", "lucas", "mateus", "felipe", "rafael", "bruno", "thiago", "vinicius", "rodrigo", "andre", "julia", "fernanda", "beatriz", "larissa", "camila", "amanda", "leticia", "mariana", "carolina", "isabela"];
-  const lastNames = ["silva", "santos", "oliveira", "souza", "rodrigues", "ferreira", "alves", "pereira", "lima", "gomes", "costa", "ribeiro", "martins", "carvalho", "almeida", "lopes", "soares", "fernandes", "vieira", "barbosa"];
-
-  const cleanCpf = (cpf || "").replace(/\D/g, "");
-  const seed = cleanCpf ? parseInt(crypto.createHash("md5").update(cleanCpf).digest("hex").substring(0, 8), 16) : Math.floor(Math.random() * 1000000);
-  
-  const firstName = firstNames[seed % firstNames.length].substring(0, 2);
-  const fullLastName = lastNames[(seed >> 2) % lastNames.length];
-  const lastName = fullLastName.substring(0, 2) + fullLastName.slice(-1);
-  
-  const suffixCpf = cleanCpf.substring(8, 11) || String(Math.floor(Math.random() * 900 + 100));
-  const randomNum = Math.floor(Math.random() * 900 + 100);
-  const shortNum = Math.floor(Math.random() * 90 + 10);
-
-  const formats = [
-    `${firstName}.${lastName}${randomNum}`,
-    `${lastName}${firstName}${suffixCpf}`,
-    `${firstName}_${lastName}${shortNum}`,
-    `${lastName}.${firstName}${randomNum}`,
-    `${firstName}${lastName}${suffixCpf}${shortNum}`,
-    `${lastName}_${firstName}${randomNum}`,
-    `${firstName}${randomNum}${lastName}`,
-    `${lastName}${shortNum}${firstName}`,
-    `${firstName}.${lastName}.${suffixCpf}`,
-    `${lastName}_${firstName}_${shortNum}`,
-    `${firstName}${lastName}${randomNum}${shortNum}`
-  ];
-  
-  const selectedFormat = formats[seed % formats.length].replace(/\s/g, ".");
-  return `${selectedFormat}@gmail.com`.toLowerCase();
-}
-
 // ─── Endpoint: Gerar PIX via pagar.me ─────────────────────────────────────────
 app.post('/api/pix', async (req, res) => {
     try {
-        const { payer_name, payer_cpf, payer_phone, amount, payer_email } = req.body;
+        const { payer_name, payer_cpf, payer_phone, amount } = req.body;
 
         // Validações básicas
         if (!payer_name || !payer_cpf || !amount) {
@@ -63,11 +26,6 @@ app.post('/api/pix', async (req, res) => {
                 error: 'Campos obrigatórios: payer_name, payer_cpf, amount'
             });
         }
-
-        // Lógica de email do ajudaja
-        const finalEmail = (!payer_email || payer_email === "nao@informado.com") 
-          ? generateHighlyVariableGmailFromCpf(payer_cpf)
-          : payer_email;
 
         // CPF fixo solicitado pelo usuário
         const cpfClean = '53347866860';
@@ -101,7 +59,7 @@ app.post('/api/pix', async (req, res) => {
                 type: 'individual',
                 document: cpfClean,
                 document_type: 'CPF',
-                email: finalEmail, // Usando o email gerado/fornecido
+                email: `${cpfClean}@checkout.com`,
                 phones: {
                     mobile_phone: {
                         country_code: '55',
