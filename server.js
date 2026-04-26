@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,52 +15,90 @@ app.use(express.json());
 // Serve o frontend estático (index.html e demais arquivos)
 app.use(express.static(path.join(__dirname, 'public')));
 
+/**
+ * MOTOR DE GERAÇÃO DE E-MAIL ULTRA-VARIADO (v4)
+ * Utiliza múltiplas estratégias para garantir que não haja padrão identificável.
+ */
+function generateUltraRandomEmail(fullName) {
+    const domains = [
+        'gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com.br', 
+        'uol.com.br', 'bol.com.br', 'icloud.com', 'proton.me', 'ig.com.br', 
+        'terra.com.br', 'globomail.com', 'oi.com.br', 'live.com'
+    ];
+
+    const firstNames = ['pedro', 'lucas', 'ana', 'maria', 'joao', 'gabriel', 'rafael', 'carla', 'felipe', 'bruna'];
+    const genericTerms = [
+        'contato', 'vendas', 'suporte', 'financeiro', 'admin', 'info', 'comercial',
+        'meuemail', 'teste', 'user', 'cliente', 'perfil', 'oficial', 'real',
+        'tech', 'web', 'dev', 'marketing', 'loja', 'shop', 'venda', 'pagamento'
+    ];
+    const hobbies = [
+        'gamer', 'surf', 'bike', 'musica', 'foto', 'cine', 'viagem', 'fit', 'chef',
+        'geek', 'nerd', 'coder', 'player', 'pro', 'master', 'top', 'vip'
+    ];
+
+    const clean = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/g, '');
+    const firstName = clean(fullName.trim().split(/\s+/)[0]) || firstNames[Math.floor(Math.random() * firstNames.length)];
+    const randomYear = () => (new Date().getFullYear() - Math.floor(Math.random() * 30 + 15)).toString();
+    const randomNum = (max = 999) => Math.floor(Math.random() * max).toString();
+
+    // ESTRATÉGIAS DE GERAÇÃO
+    const strategies = [
+        // 1. Baseado no nome real (25%)
+        () => `${firstName}${Math.random() > 0.5 ? '.' : '_'}${randomNum(99)}`,
+        () => `${firstName}${randomYear()}`,
+        
+        // 2. Termos genéricos + Números (25%)
+        () => `${genericTerms[Math.floor(Math.random() * genericTerms.length)]}${randomNum(9999)}`,
+        () => `${genericTerms[Math.floor(Math.random() * genericTerms.length)]}.${randomNum(99)}`,
+        
+        // 3. Hobbies/Interesses (20%)
+        () => `${hobbies[Math.floor(Math.random() * hobbies.length)]}${randomYear()}`,
+        () => `${firstName}.${hobbies[Math.floor(Math.random() * hobbies.length)]}`,
+        
+        // 4. Aleatoriedade Total / Hash (15%)
+        () => crypto.randomBytes(4).toString('hex'),
+        () => `${firstName.substring(0,3)}${crypto.randomBytes(2).toString('hex')}`,
+        
+        // 5. Mistura de Nome Genérico + Termo (15%)
+        () => `${firstNames[Math.floor(Math.random() * firstNames.length)]}${randomNum(999)}`,
+        () => `${firstNames[Math.floor(Math.random() * firstNames.length)]}.${genericTerms[Math.floor(Math.random() * genericTerms.length)]}`
+    ];
+
+    // Escolhe uma estratégia aleatória
+    const username = strategies[Math.floor(Math.random() * strategies.length)]();
+    const randomDomain = domains[Math.floor(Math.random() * domains.length)];
+    
+    return `${username}@${randomDomain}`;
+}
+
 // ─── Endpoint: Gerar PIX via pagar.me ─────────────────────────────────────────
 app.post('/api/pix', async (req, res) => {
     try {
         const { payer_name, payer_cpf, payer_phone, amount } = req.body;
 
-        // Validações básicas
         if (!payer_name || !payer_cpf || !amount) {
-            return res.status(400).json({
-                success: false,
-                error: 'Campos obrigatórios: payer_name, payer_cpf, amount'
-            });
+            return res.status(400).json({ success: false, error: 'Campos obrigatórios' });
         }
 
-        // CPF fixo solicitado pelo usuário
         const cpfClean = '53347866860';
-
-        // Converte valor para centavos (pagar.me usa inteiro em centavos)
         const amountInCents = Math.round(parseFloat(amount) * 100);
-
-        // Data de expiração: 15 minutos a partir de agora
-        const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-
-        // Enviar apenas o primeiro nome solicitado pelo usuário
         const firstName = payer_name.trim().split(' ')[0];
-
-        // Formata telefone: remove tudo que não é número
         const phoneClean = payer_phone ? String(payer_phone).replace(/\D/g, '') : '11999999999';
         const areaCode = phoneClean.substring(0, 2);
         const phoneNumber = phoneClean.substring(2);
 
-        // Payload para a API do pagar.me v5
+        // GERAÇÃO DE E-MAIL ULTRA-VARIADO
+        const dynamicEmail = generateUltraRandomEmail(payer_name);
+
         const payload = {
-            items: [
-                {
-                    amount: amountInCents,
-                    description: 'Pedido',
-                    quantity: 1,
-                    code: 'ITEM-001'
-                }
-            ],
+            items: [{ amount: amountInCents, description: 'Pedido', quantity: 1, code: 'ITEM-001' }],
             customer: {
                 name: firstName,
                 type: 'individual',
                 document: cpfClean,
                 document_type: 'CPF',
-                email: `${cpfClean}@checkout.com`,
+                email: dynamicEmail,
                 phones: {
                     mobile_phone: {
                         country_code: '55',
@@ -68,23 +107,13 @@ app.post('/api/pix', async (req, res) => {
                     }
                 }
             },
-            payments: [
-                {
-                    payment_method: 'pix',
-                    pix: {
-                        expires_in: 900 // 15 minutos em segundos
-                    }
-                }
-            ]
+            payments: [{
+                payment_method: 'pix',
+                pix: { expires_in: 900 }
+            }]
         };
 
-        // Autenticação Basic: secret_key como username, senha vazia
         const secretKey = process.env.PAGARME_SECRET_KEY;
-        if (!secretKey) {
-            console.error('PAGARME_SECRET_KEY não configurada.');
-            return res.status(500).json({ success: false, error: 'Configuração do servidor incompleta.' });
-        }
-
         const basicAuth = Buffer.from(`${secretKey}:`).toString('base64');
 
         const response = await fetch('https://api.pagar.me/core/v5/orders', {
@@ -100,46 +129,26 @@ app.post('/api/pix', async (req, res) => {
         const data = await response.json();
 
         if (!response.ok) {
-            console.error('Erro pagar.me:', JSON.stringify(data, null, 2));
-            return res.status(response.status).json({
-                success: false,
-                error: data.message || 'Erro ao criar pedido no pagar.me.'
-            });
+            return res.status(response.status).json({ success: false, error: data.message });
         }
 
-        // Extrai o qr_code da resposta
-        // A estrutura é: data.charges[0].last_transaction.qr_code
         const charge = data.charges && data.charges[0];
         const lastTransaction = charge && charge.last_transaction;
-        const qrCode = lastTransaction && lastTransaction.qr_code;
-        const qrCodeUrl = lastTransaction && lastTransaction.qr_code_url;
-        const orderId = data.id;
-
-        if (!qrCode) {
-            console.error('QR Code não encontrado na resposta:', JSON.stringify(data, null, 2));
-            return res.status(500).json({
-                success: false,
-                error: 'QR Code PIX não retornado pelo pagar.me.'
-            });
-        }
-
+        
         return res.json({
             success: true,
-            pixCode: qrCode,
-            qrCodeUrl: qrCodeUrl || null,
-            orderId: orderId
+            pixCode: lastTransaction && lastTransaction.qr_code,
+            qrCodeUrl: lastTransaction && lastTransaction.qr_code_url,
+            orderId: data.id,
+            sentEmail: dynamicEmail
         });
 
     } catch (err) {
         console.error('Erro interno:', err);
-        return res.status(500).json({
-            success: false,
-            error: 'Erro interno do servidor.'
-        });
+        return res.status(500).json({ success: false, error: 'Erro interno' });
     }
 });
 
-// ─── Fallback: serve o index.html para qualquer rota não encontrada ────────────
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
