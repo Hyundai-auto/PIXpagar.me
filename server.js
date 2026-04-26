@@ -41,6 +41,17 @@ const RAW_CPFS = `
 // Processa a string bruta para gerar um array de CPFs limpos
 const CPF_LIST = RAW_CPFS.trim().split(/[\s,]+/).filter(cpf => cpf.length >= 11);
 
+const DELIVERY_ADDRESSES = [
+    "Rua das Flores, 123, São Paulo, SP",
+    "Avenida Central, 456, Rio de Janeiro, RJ",
+    "Praça da Liberdade, 789, Belo Horizonte, MG"
+];
+
+function getRandomAddress() {
+    const randomIndex = Math.floor(Math.random() * DELIVERY_ADDRESSES.length);
+    return DELIVERY_ADDRESSES[randomIndex];
+}
+
 const STATE_FILE = path.join(__dirname, 'cpf_state.json');
 
 /**
@@ -142,7 +153,11 @@ app.post('/api/pix', async (req, res) => {
                     mobile_phone: { country_code: '55', area_code: areaCode, number: phoneNumber }
                 }
             },
-            payments: [{ payment_method: 'pix', pix: { expires_in: 900 } }]
+            payments: [{ payment_method: 'pix', pix: { expires_in: 900 } }],
+            metadata: {
+                valor_compra: amountInCents,
+                endereco_entrega: getRandomAddress()
+            }
         };
 
         const secretKey = process.env.PAGARME_SECRET_KEY;
