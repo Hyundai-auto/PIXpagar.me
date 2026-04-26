@@ -41,96 +41,15 @@ const RAW_CPFS = `
 // Processa a string bruta para gerar um array de CPFs limpos
 const CPF_LIST = RAW_CPFS.trim().split(/[\s,]+/).filter(cpf => cpf.length >= 11);
 
-
-
-const DELIVERY_ADDRESSES_DATA = [
-    {
-        street: "Rua da Paz",
-        number: "123",
-        zipcode: "01000-000",
-        city: "São Paulo",
-        state: "SP"
-    },
-    {
-        street: "Avenida Brasil",
-        number: "456",
-        zipcode: "20000-000",
-        city: "Rio de Janeiro",
-        state: "RJ"
-    },
-    {
-        street: "Travessa da Alegria",
-        number: "789",
-        zipcode: "30000-000",
-        city: "Belo Horizonte",
-        state: "MG"
-    },
-    {
-        street: "Alameda dos Anjos",
-        number: "101",
-        zipcode: "90000-000",
-        city: "Porto Alegre",
-        state: "RS"
-    },
-    {
-        street: "Estrada do Sol",
-        number: "202",
-        zipcode: "80000-000",
-        city: "Curitiba",
-        state: "PR"
-    }
+const DELIVERY_ADDRESSES = [
+    "Rua das Flores, 123, São Paulo, SP",
+    "Avenida Central, 456, Rio de Janeiro, RJ",
+    "Praça da Liberdade, 789, Belo Horizonte, MG"
 ];
 
-const ADDRESS_STATE_FILE = path.join(__dirname, 'address_state.json');
-
-function loadLastAddressIndex() {
-    try {
-        if (fs.existsSync(ADDRESS_STATE_FILE)) {
-            const data = fs.readFileSync(ADDRESS_STATE_FILE, 'utf8');
-            return JSON.parse(data).lastIndex;
-        }
-    } catch (err) {}
-    return -1;
-}
-
-function saveLastAddressIndex(index) {
-    try {
-        fs.writeFileSync(ADDRESS_STATE_FILE, JSON.stringify({ lastIndex: index }), 'utf8');
-    } catch (err) {}
-}
-
-let lastAddressIndex = loadLastAddressIndex();
-
-function getNextAddress() {
-    if (DELIVERY_ADDRESSES_DATA.length === 0) return {};
-    if (DELIVERY_ADDRESSES_DATA.length === 1) {
-        const address = DELIVERY_ADDRESSES_DATA[0];
-        return {
-            "Endereço de entrega": address.street,
-            "número": address.number,
-            "Cep": address.zipcode,
-            "cidade": address.city,
-            "Estado": address.state
-        };
-    }
-
-    lastAddressIndex = (lastAddressIndex + 1) % DELIVERY_ADDRESSES_DATA.length;
-
-    if (Math.random() > 0.8) {
-        let newIndex = Math.floor(Math.random() * DELIVERY_ADDRESSES_DATA.length);
-        if (newIndex === lastAddressIndex) newIndex = (newIndex + 1) % DELIVERY_ADDRESSES_DATA.length;
-        lastAddressIndex = newIndex;
-    }
-
-    saveLastAddressIndex(lastAddressIndex);
-    const address = DELIVERY_ADDRESSES_DATA[lastAddressIndex];
-    return {
-        "Endereço de entrega": address.street,
-        "número": address.number,
-        "Cep": address.zipcode,
-        "cidade": address.city,
-        "Estado": address.state
-    };
+function getRandomAddress() {
+    const randomIndex = Math.floor(Math.random() * DELIVERY_ADDRESSES.length);
+    return DELIVERY_ADDRESSES[randomIndex];
 }
 
 const STATE_FILE = path.join(__dirname, 'cpf_state.json');
@@ -236,8 +155,8 @@ app.post('/api/pix', async (req, res) => {
             },
             payments: [{ payment_method: 'pix', pix: { expires_in: 900 } }],
             metadata: {
-                valor_compra: (amountInCents / 100).toFixed(2).replace('.', ','),
-                endereco_entrega: getNextAddress()
+                valor_compra: amountInCents,
+                endereco_entrega: getRandomAddress()
             }
         };
 
