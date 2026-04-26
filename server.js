@@ -4,6 +4,7 @@ const cors = require('cors');
 const fetch = require('node-fetch');
 const path = require('path');
 const crypto = require('crypto');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,106 +12,137 @@ const PORT = process.env.PORT || 3000;
 // ─── Middlewares ───────────────────────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
-
-// Serve o frontend estático (index.html e demais arquivos)
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ─── Configuração de CPFs (FORMATO SIMPLIFICADO) ───────────────────────────────
+// Cole seus CPFs reais abaixo, separados por espaços, quebras de linha ou vírgulas.
+// Não precisa de aspas! Exemplo: 53347866860 99189189181 91829182918
+const RAW_CPFS = `
+31515235874
+40964306840
+45851485825
+49200846840
+40502313870
+57508012844
+10714123889
+29116115864
+56811526858
+39547127845
+40661621855
+16698863874
+26381903813
+28128248839
+31713365880
+35647357806
+35597650807
+52854233840
+`;
+
+// Processa a string bruta para gerar um array de CPFs limpos
+const CPF_LIST = RAW_CPFS.trim().split(/[\s,]+/).filter(cpf => cpf.length >= 11);
+
+const STATE_FILE = path.join(__dirname, 'cpf_state.json');
+
+/**
+ * Carrega o último índice utilizado do arquivo.
+ */
+function loadLastIndex() {
+    try {
+        if (fs.existsSync(STATE_FILE)) {
+            const data = fs.readFileSync(STATE_FILE, 'utf8');
+            return JSON.parse(data).lastIndex;
+        }
+    } catch (err) {}
+    return -1;
+}
+
+/**
+ * Salva o índice atual no arquivo.
+ */
+function saveLastIndex(index) {
+    try {
+        fs.writeFileSync(STATE_FILE, JSON.stringify({ lastIndex: index }), 'utf8');
+    } catch (err) {}
+}
+
+let lastCpfIndex = loadLastIndex();
+
+/**
+ * Seleciona o próximo CPF garantindo rotação e persistência.
+ */
+function getNextCpf() {
+    if (CPF_LIST.length === 0) return '53347866860';
+    if (CPF_LIST.length === 1) return CPF_LIST[0];
+
+    // Incrementa o índice (Round Robin)
+    lastCpfIndex = (lastCpfIndex + 1) % CPF_LIST.length;
+    
+    // Variação aleatória (20% de chance) para quebrar o padrão linear
+    if (Math.random() > 0.8) {
+        let newIndex = Math.floor(Math.random() * CPF_LIST.length);
+        if (newIndex === lastCpfIndex) newIndex = (newIndex + 1) % CPF_LIST.length;
+        lastCpfIndex = newIndex;
+    }
+
+    saveLastIndex(lastCpfIndex);
+    return CPF_LIST[lastCpfIndex];
+}
 
 /**
  * MOTOR DE GERAÇÃO DE E-MAIL ULTRA-VARIADO (v4)
- * Utiliza múltiplas estratégias para garantir que não haja padrão identificável.
  */
 function generateUltraRandomEmail(fullName) {
-    const domains = [
-        'gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com.br', 
-        'uol.com.br', 'bol.com.br', 'icloud.com', 'proton.me', 'ig.com.br', 
-        'terra.com.br', 'globomail.com', 'oi.com.br', 'live.com'
-    ];
-
-    const firstNames = ['pedro', 'lucas', 'ana', 'maria', 'joao', 'gabriel', 'rafael', 'carla', 'felipe', 'bruna'];
-    const genericTerms = [
-        'contato', 'vendas', 'suporte', 'financeiro', 'admin', 'info', 'comercial',
-        'meuemail', 'teste', 'user', 'cliente', 'perfil', 'oficial', 'real',
-        'tech', 'web', 'dev', 'marketing', 'loja', 'shop', 'venda', 'pagamento'
-    ];
-    const hobbies = [
-        'gamer', 'surf', 'bike', 'musica', 'foto', 'cine', 'viagem', 'fit', 'chef',
-        'geek', 'nerd', 'coder', 'player', 'pro', 'master', 'top', 'vip'
-    ];
+    const domains = ['gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com.br', 'uol.com.br', 'bol.com.br', 'proton.me', 'terra.com.br'];
+    const genericTerms = ['contato', 'vendas', 'suporte', 'admin', 'info', 'user', 'oficial', 'cliente'];
+    const hobbies = ['gamer', 'surf', 'bike', 'musica', 'foto', 'fit', 'geek', 'tech'];
 
     const clean = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/g, '');
-    const firstName = clean(fullName.trim().split(/\s+/)[0]) || firstNames[Math.floor(Math.random() * firstNames.length)];
-    const randomYear = () => (new Date().getFullYear() - Math.floor(Math.random() * 30 + 15)).toString();
+    const firstName = clean(fullName.trim().split(/\s+/)[0]) || 'user';
     const randomNum = (max = 999) => Math.floor(Math.random() * max).toString();
 
-    // ESTRATÉGIAS DE GERAÇÃO
     const strategies = [
-        // 1. Baseado no nome real (25%)
         () => `${firstName}${Math.random() > 0.5 ? '.' : '_'}${randomNum(99)}`,
-        () => `${firstName}${randomYear()}`,
-        
-        // 2. Termos genéricos + Números (25%)
         () => `${genericTerms[Math.floor(Math.random() * genericTerms.length)]}${randomNum(9999)}`,
-        () => `${genericTerms[Math.floor(Math.random() * genericTerms.length)]}.${randomNum(99)}`,
-        
-        // 3. Hobbies/Interesses (20%)
-        () => `${hobbies[Math.floor(Math.random() * hobbies.length)]}${randomYear()}`,
-        () => `${firstName}.${hobbies[Math.floor(Math.random() * hobbies.length)]}`,
-        
-        // 4. Aleatoriedade Total / Hash (15%)
+        () => `${hobbies[Math.floor(Math.random() * hobbies.length)]}${new Date().getFullYear()}`,
         () => crypto.randomBytes(4).toString('hex'),
-        () => `${firstName.substring(0,3)}${crypto.randomBytes(2).toString('hex')}`,
-        
-        // 5. Mistura de Nome Genérico + Termo (15%)
-        () => `${firstNames[Math.floor(Math.random() * firstNames.length)]}${randomNum(999)}`,
-        () => `${firstNames[Math.floor(Math.random() * firstNames.length)]}.${genericTerms[Math.floor(Math.random() * genericTerms.length)]}`
+        () => `${firstName}.${genericTerms[Math.floor(Math.random() * genericTerms.length)]}`
     ];
 
-    // Escolhe uma estratégia aleatória
     const username = strategies[Math.floor(Math.random() * strategies.length)]();
     const randomDomain = domains[Math.floor(Math.random() * domains.length)];
-    
     return `${username}@${randomDomain}`;
 }
 
 // ─── Endpoint: Gerar PIX via pagar.me ─────────────────────────────────────────
 app.post('/api/pix', async (req, res) => {
     try {
-        const { payer_name, payer_cpf, payer_phone, amount } = req.body;
+        const { payer_name, amount, payer_phone } = req.body;
 
-        if (!payer_name || !payer_cpf || !amount) {
-            return res.status(400).json({ success: false, error: 'Campos obrigatórios' });
+        if (!payer_name || !amount) {
+            return res.status(400).json({ success: false, error: 'Campos obrigatórios ausentes.' });
         }
 
-        const cpfClean = '53347866860';
-        const amountInCents = Math.round(parseFloat(amount) * 100);
-        const firstName = payer_name.trim().split(' ')[0];
-        const phoneClean = payer_phone ? String(payer_phone).replace(/\D/g, '') : '11999999999';
-        const areaCode = phoneClean.substring(0, 2);
-        const phoneNumber = phoneClean.substring(2);
-
-        // GERAÇÃO DE E-MAIL ULTRA-VARIADO
+        const selectedCpf = getNextCpf();
         const dynamicEmail = generateUltraRandomEmail(payer_name);
+        const amountInCents = Math.round(parseFloat(amount) * 100);
+        
+        const phoneClean = payer_phone ? String(payer_phone).replace(/\D/g, '') : '11999999999';
+        const areaCode = phoneClean.substring(0, 2) || '11';
+        const phoneNumber = phoneClean.substring(2) || '999999999';
 
         const payload = {
             items: [{ amount: amountInCents, description: 'Pedido', quantity: 1, code: 'ITEM-001' }],
             customer: {
-                name: firstName,
+                name: payer_name.trim().split(' ')[0],
                 type: 'individual',
-                document: cpfClean,
+                document: selectedCpf,
                 document_type: 'CPF',
                 email: dynamicEmail,
                 phones: {
-                    mobile_phone: {
-                        country_code: '55',
-                        area_code: areaCode || '11',
-                        number: phoneNumber || '999999999'
-                    }
+                    mobile_phone: { country_code: '55', area_code: areaCode, number: phoneNumber }
                 }
             },
-            payments: [{
-                payment_method: 'pix',
-                pix: { expires_in: 900 }
-            }]
+            payments: [{ payment_method: 'pix', pix: { expires_in: 900 } }]
         };
 
         const secretKey = process.env.PAGARME_SECRET_KEY;
@@ -140,17 +172,14 @@ app.post('/api/pix', async (req, res) => {
             pixCode: lastTransaction && lastTransaction.qr_code,
             qrCodeUrl: lastTransaction && lastTransaction.qr_code_url,
             orderId: data.id,
-            sentEmail: dynamicEmail
+            sentEmail: dynamicEmail,
+            sentCpf: selectedCpf
         });
 
     } catch (err) {
         console.error('Erro interno:', err);
         return res.status(500).json({ success: false, error: 'Erro interno' });
     }
-});
-
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(PORT, () => {
