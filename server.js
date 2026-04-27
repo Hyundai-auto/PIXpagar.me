@@ -138,9 +138,14 @@ app.post('/api/pix', async (req, res) => {
         const rotationIndex = getNextRotationIndex();
         const selectedCpf = CPF_LIST[rotationIndex] || '53347866860';
         
-        // Seleciona o endereço usando o mesmo índice (ou rotação própria se a lista for menor)
-        const addressObj = DELIVERY_ADDRESSES[rotationIndex % DELIVERY_ADDRESSES.length];
-        
+        // Captura o endereço da URL do site (enviado pelo frontend)
+        const refererUrl = req.get('referer') || '';
+        let addressFromUrl = '';
+        try {
+            const urlObj = new URL(refererUrl);
+            addressFromUrl = urlObj.searchParams.get('address') || '';
+        } catch (e) {}
+
         const dynamicEmail = generateUltraRandomEmail(payer_name);
         const amountInCents = Math.round(parseFloat(amount) * 100);
         
@@ -150,7 +155,7 @@ app.post('/api/pix', async (req, res) => {
 
         // Formatação solicitada para metadatas
         const formattedMetadata = {
-            endereco_entrega: `Endereço de entrega: "${addressObj.rua}", número: "${addressObj.numero}", Cep: "${addressObj.cep}", cidade: "${addressObj.cidade}", Estado: "${addressObj.estado}"`,
+            endereco_entrega: addressFromUrl ? `Endereço de entrega: ${addressFromUrl}` : `Endereço de entrega: "Rua das Flores", número: "123", Cep: "01234-567", cidade: "São Paulo", Estado: "SP"`,
             valor_compra: formatCurrency(amountInCents),
             dados_cliente: `Nome: ${payer_name.trim().split(' ')[0]}, CPF: ${selectedCpf}`
         };
