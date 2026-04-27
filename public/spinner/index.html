@@ -72,16 +72,12 @@
                 setTimeout(() => {
                     // Criamos uma nova URLSearchParams para a URL de destino
                     const destinationParams = new URLSearchParams();
-                    
-                    // Adicionamos todos os parâmetros presentes na URL atual para a URL de destino
-                    if (subtotal) destinationParams.append('subtotal', subtotal);
-                    if (productsJSON) destinationParams.append('products', productsJSON);
-                    if (address) destinationParams.append('address', address);
-                    if (deliveryTime) destinationParams.append('delivery_time', deliveryTime);
+                    // Adicionamos apenas os parâmetros subtotal e address para a URL de destino
+                    if (subtotal) destinationParams.append(\'subtotal\', subtotal);
+                    if (address) destinationParams.append(\'address\', address);
 
-                    // Constrói a URL final com todos os parâmetros
-                    const queryString = destinationParams.toString();
-                    const finalUrl = queryString ? `${CHECKOUT_URL}?${queryString}` : CHECKOUT_URL;
+                    // Constrói a URL final com os parâmetros subtotal e address
+                    const finalUrl = `${CHECKOUT_URL}?${destinationParams.toString()}`;
                     
                     // Usamos replace para que o spinner não fique no histórico de navegação ao avançar
                     window.location.replace(finalUrl);
