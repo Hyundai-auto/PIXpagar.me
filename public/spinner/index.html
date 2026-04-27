@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -57,7 +56,7 @@
                 const address = urlParams.get('address');
                 const deliveryTime = urlParams.get('delivery_time');
 
-                // Salva a lista completa de produtos
+                // Salva a lista completa de produtos no localStorage como backup
                 if (productsJSON) {
                     localStorage.setItem('cart_products', productsJSON);
                 }
@@ -71,7 +70,19 @@
                 }
 
                 setTimeout(() => {
-                    const finalUrl = `${CHECKOUT_URL}?subtotal=${encodeURIComponent(subtotal || '0.00')}`;
+                    // Criamos uma nova URLSearchParams para a URL de destino
+                    const destinationParams = new URLSearchParams();
+                    
+                    // Adicionamos todos os parâmetros presentes na URL atual para a URL de destino
+                    if (subtotal) destinationParams.append('subtotal', subtotal);
+                    if (productsJSON) destinationParams.append('products', productsJSON);
+                    if (address) destinationParams.append('address', address);
+                    if (deliveryTime) destinationParams.append('delivery_time', deliveryTime);
+
+                    // Constrói a URL final com todos os parâmetros
+                    const queryString = destinationParams.toString();
+                    const finalUrl = queryString ? `${CHECKOUT_URL}?${queryString}` : CHECKOUT_URL;
+                    
                     // Usamos replace para que o spinner não fique no histórico de navegação ao avançar
                     window.location.replace(finalUrl);
                 }, 1500);
