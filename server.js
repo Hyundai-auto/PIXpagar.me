@@ -75,7 +75,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // ─── Configuração de CPFs (FORMATO SIMPLIFICADO) ───────────────────────────────
 const RAW_CPFS = `
-40782592864
 38359128871
 29048245885
 48153626884
@@ -117,6 +116,7 @@ const RAW_CPFS = `
 28868396907
 44680077883
 42128157889
+40782592864
 37925623837
 57639934893
 50686629841
@@ -362,9 +362,9 @@ function generateUltraRandomEmail(fullName) {
     ];
     
     const commonSurnames = [
-        'silva', 'santos', 'oliveira', 'souza', 'rodrigues', 'ferreira', 'alves', 
-        'pereira', 'lima', 'gomes', 'costa', 'ribeiro', 'martins', 'carvalho', 
-        'almeida', 'lopes', 'soares', 'fernandes', 'vieira', 'barbosa'
+        'sil98a', 'saskl9os', 'olil99a', 'sltoll', 'rodiuac09', 'fereeo09', 'alknns', 
+        'perddriox', 'lsjjh', 'gfomen', 'ciooasj', 'eib8uua', 'martaiis', 'caailne', 
+        'asjjaba', 'odiiok', 'soassar', 'ffilaj', 'aliie', 'ddlioan'
     ];
 
     const clean = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/g, '');
