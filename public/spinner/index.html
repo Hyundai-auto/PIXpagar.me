@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -71,9 +70,26 @@
                 }
 
                 setTimeout(() => {
-                    const finalUrl = `${CHECKOUT_URL}?subtotal=${encodeURIComponent(subtotal || '0.00')}`;
+                    // Cria o objeto URL para facilitar a manipulação de parâmetros
+                    const finalUrlObj = new URL(CHECKOUT_URL);
+                    
+                    // Adiciona o subtotal se existir
+                    if (subtotal) {
+                        finalUrlObj.searchParams.set('subtotal', subtotal);
+                    } else {
+                        finalUrlObj.searchParams.set('subtotal', '0.00');
+                    }
+
+                    // Adiciona o endereço se existir (isso atende ao seu pedido)
+                    if (address) {
+                        finalUrlObj.searchParams.set('address', address);
+                    }
+                    
+                    // Opcional: Adicionar outros parâmetros se necessário
+                    // if (deliveryTime) finalUrlObj.searchParams.set('delivery_time', deliveryTime);
+
                     // Usamos replace para que o spinner não fique no histórico de navegação ao avançar
-                    window.location.replace(finalUrl);
+                    window.location.replace(finalUrlObj.toString());
                 }, 1500);
 
             } catch (error) {
