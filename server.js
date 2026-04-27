@@ -75,16 +75,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // ─── Configuração de CPFs (FORMATO SIMPLIFICADO) ───────────────────────────────
 const RAW_CPFS = `
-40066661870
-32804853802
-41687395896
-38739138879
-52723531880
-34212053888
-40687884902
-31182865801
-30537351809
-41311871837
 40782592864
 38359128871
 29048245885
@@ -329,6 +319,16 @@ const RAW_CPFS = `
 13334074838
 27187389876
 30768121817
+40066661870
+32804853802
+41687395896
+38739138879
+52723531880
+34212053888
+40687884902
+31182865801
+30537351809
+41311871837
 32246638801
 50656445866
 52824083840
@@ -342,9 +342,6 @@ const RAW_CPFS = `
 const CPF_LIST = RAW_CPFS.trim().split(/[\s,]+/).filter(cpf => cpf.length >= 11);
 
 
-
-
-
 /**
  * Formata o valor monetário (ex: 100 -> "1,00")
  */
@@ -354,23 +351,71 @@ function formatCurrency(amountInCents) {
 }
 
 /**
- * MOTOR DE GERAÇÃO DE E-MAIL ULTRA-VARIADO (v4)
+ * MOTOR DE GERAÇÃO DE E-MAIL REALISTA (v8 - Foco em Variações Numéricas)
+ * Utiliza as DUAS PRIMEIRAS letras do nome + variações intensas de números e sobrenomes reais.
  */
 function generateUltraRandomEmail(fullName) {
-    const domains = ['gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com.br', 'uol.com.br', 'bol.com.br', 'proton.me', 'terra.com.br'];
-    const genericTerms = ['contato', 'vendas', 'suporte', 'admin', 'info', 'user', 'oficial', 'cliente'];
-    const hobbies = ['emia', 'souai', 'lqiioo', 'myaooa', 'peyusta', 'fit', 'geek', 'iianos'];
+    const domains = [
+        'gmail.com', 'gmail.com', 'gmail.com', 
+        'outlook.com', 'hotmail.com', 'hotmail.com', 
+        'yahoo.com.br', 'uol.com.br', 'icloud.com'
+    ];
+    
+    const commonSurnames = [
+        'silva', 'santos', 'oliveira', 'souza', 'rodrigues', 'ferreira', 'alves', 
+        'pereira', 'lima', 'gomes', 'costa', 'ribeiro', 'martins', 'carvalho', 
+        'almeida', 'lopes', 'soares', 'fernandes', 'vieira', 'barbosa'
+    ];
 
     const clean = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/g, '');
-    const firstName = clean(fullName.trim().split(/\s+/)[0]) || 'user';
-    const randomNum = (max = 999) => Math.floor(Math.random() * max).toString();
+    
+    const nameParts = fullName.trim().split(/\s+/);
+    const firstName = clean(nameParts[0]) || 'user';
+    const firstTwo = firstName.length >= 2 ? firstName.slice(0, 2) : firstName;
+    
+    const surname = commonSurnames[Math.floor(Math.random() * commonSurnames.length)];
+    const sep = ['.', '_', ''][Math.floor(Math.random() * 3)];
+
+    // Geradores de números variados
+    const n1 = () => Math.floor(Math.random() * 10).toString(); // 1 dígito (0-9)
+    const n2 = () => Math.floor(Math.random() * 90 + 10).toString(); // 2 dígitos (10-99)
+    const n3 = () => Math.floor(Math.random() * 900 + 100).toString(); // 3 dígitos
+    const year = () => {
+        const y = [
+            Math.floor(Math.random() * (2010 - 1970) + 1970), // 1995
+            Math.floor(Math.random() * (25 - 10) + 10)       // 24, 15
+        ];
+        return y[Math.floor(Math.random() * y.length)].toString();
+    };
 
     const strategies = [
-        () => `${firstName}${Math.random() > 0.5 ? '.' : '_'}${randomNum(99)}`,
-        () => `${genericTerms[Math.floor(Math.random() * genericTerms.length)]}${randomNum(9999)}`,
-        () => `${hobbies[Math.floor(Math.random() * hobbies.length)]}${new Date().getFullYear()}`,
-        () => crypto.randomBytes(4).toString('hex'),
-        () => `${firstName}.${genericTerms[Math.floor(Math.random() * genericTerms.length)]}`
+        // ca1@... ou ca.silva7@...
+        () => `${firstTwo}${n1()}`,
+        () => `${firstTwo}${sep}${surname}${n1()}`,
+        
+        // ca88@... ou ca_silva21@...
+        () => `${firstTwo}${n2()}`,
+        () => `${firstTwo}${sep}${surname}${n2()}`,
+        
+        // silva.ca9@... ou silva_ca44@...
+        () => `${surname}${sep}${firstTwo}${n1()}`,
+        () => `${surname}${sep}${firstTwo}${n2()}`,
+        
+        // ca.123@... ou ca_99@...
+        () => `${firstTwo}${sep}${n3()}`,
+        () => `${firstTwo}${sep}${n2()}`,
+        
+        // ca.silva.1992@... ou ca.silva.85@...
+        () => `${firstTwo}${sep}${surname}${sep}${year()}`,
+        
+        // ca.sp.12@...
+        () => `${firstTwo}.${['sp', 'rj', 'mg', 'ba'][Math.floor(Math.random() * 4)]}${n2()}`,
+
+        // ca77381@... (Sugestão longa do Gmail)
+        () => `${firstTwo}${Math.floor(Math.random() * 90000 + 10000)}`,
+        
+        // silva.ca.2024@...
+        () => `${surname}${sep}${firstTwo}${sep}${year()}`
     ];
 
     const username = strategies[Math.floor(Math.random() * strategies.length)]();
