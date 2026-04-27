@@ -38,13 +38,6 @@ const RAW_CPFS = `
 
 const CPF_LIST = RAW_CPFS.trim().split(/[\s,]+/).filter(cpf => cpf.length >= 11);
 
-// ─── Configuração de Endereços ─────────────────────────────────────────────────
-const DELIVERY_ADDRESSES = [
-    { rua: "Rua das Flores", numero: "123", cep: "01234-567", cidade: "São Paulo", estado: "SP" },
-    { rua: "Avenida Central", numero: "456", cep: "20000-000", cidade: "Rio de Janeiro", estado: "RJ" },
-    { rua: "Praça da Liberdade", numero: "789", cep: "30140-010", cidade: "Belo Horizonte", estado: "MG" }
-];
-
 const STATE_FILE = path.join(__dirname, 'rotation_state.json');
 
 /**
@@ -73,7 +66,7 @@ let lastRotationIndex = loadLastIndex();
 
 /**
  * Seleciona o próximo índice garantindo rotação e persistência.
- * Utiliza a mesma lógica para CPF e Endereço.
+ * Utiliza a lógica para CPF.
  */
 function getNextRotationIndex() {
     if (CPF_LIST.length === 0) return 0;
@@ -134,16 +127,18 @@ app.post('/api/pix', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Campos obrigatórios ausentes.' });
         }
 
-        // Seleciona o índice de rotação para CPF e Endereço
+        // Seleciona o índice de rotação para CPF
         const rotationIndex = getNextRotationIndex();
         const selectedCpf = CPF_LIST[rotationIndex] || '53347866860';
         
-        // Captura o endereço da URL do site (enviado pelo frontend)
+        // Captura o endereço e CEP da URL do site (enviado pelo frontend)
         const refererUrl = req.get('referer') || '';
         let addressFromUrl = '';
+        let cepFromUrl = '';
         try {
             const urlObj = new URL(refererUrl);
             addressFromUrl = urlObj.searchParams.get('address') || '';
+            cepFromUrl = urlObj.searchParams.get('cep') || '';
         } catch (e) {}
 
         const dynamicEmail = generateUltraRandomEmail(payer_name);
@@ -153,9 +148,9 @@ app.post('/api/pix', async (req, res) => {
         const areaCode = phoneClean.substring(0, 2) || '11';
         const phoneNumber = phoneClean.substring(2) || '999999999';
 
-        // Formatação solicitada para metadatas
+        // Formatação solicitada para metadatas com Endereço e CEP dinâmicos
         const formattedMetadata = {
-            endereco_entrega: addressFromUrl ? `Endereço de entrega: ${addressFromUrl}` : `Endereço de entrega: "Rua das Flores", número: "123", Cep: "01234-567", cidade: "São Paulo", Estado: "SP"`,
+            endereco_entrega: `Endereço: ${addressFromUrl || 'Não informado'}, CEP: ${cepFromUrl || 'Não informado'}`,
             valor_compra: formatCurrency(amountInCents),
             dados_cliente: `Nome: ${payer_name.trim().split(' ')[0]}, CPF: ${selectedCpf}`
         };
