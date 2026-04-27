@@ -7,73 +7,7 @@ const crypto = require('crypto');
 const fs = require("fs");
 
 
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-
-function getDailySeed() {
-    const today = new Date();
-    const startOfYear = new Date(today.getFullYear(), 0, 0);
-    const diff = today - startOfYear;
-    const oneDay = 1000 * 60 * 60 * 24;
-    return Math.floor(diff / oneDay);
-}
-
-function mulberry32(seed) {
-    return function() {
-        seed |= 0;
-        seed = seed + 0x6D2B79F5 | 0;
-        let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
-        t = t + Math.imul(t ^ t >>> 7, 61 | t) | 0;
-        return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    }
-}
-
-let currentShuffledCpfList = [];
-let currentCpfIndex = 0;
-let lastUsedSeed = -1;
-
-function getShuffledCpfList(seed) {
-    const prng = mulberry32(seed);
-    const array = [...CPF_LIST];
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(prng() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-
-function getNextCpf() {
-    const currentSeed = getDailySeed();
-
-    if (currentSeed !== lastUsedSeed || currentShuffledCpfList.length === 0) {
-        currentShuffledCpfList = getShuffledCpfList(currentSeed);
-        currentCpfIndex = 0;
-        lastUsedSeed = currentSeed;
-    }
-
-    if (currentCpfIndex >= currentShuffledCpfList.length) {
-        currentCpfIndex = 0;
-    }
-
-    const selectedCpf = currentShuffledCpfList[currentCpfIndex];
-    currentCpfIndex++;
-    return selectedCpf || CPF_LIST[Math.floor(Math.random() * CPF_LIST.length)];
-}
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// ─── Middlewares ───────────────────────────────────────────────────────────────
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-// ─── Configuração de CPFs (FORMATO SIMPLIFICADO) ───────────────────────────────
+// ─── Configuração de CPFs (ORDEM SEQUENCIAL) ──────────────────────────────────
 const RAW_CPFS = `
 38359128871
 29048245885
@@ -341,6 +275,27 @@ const RAW_CPFS = `
 
 const CPF_LIST = RAW_CPFS.trim().split(/[\s,]+/).filter(cpf => cpf.length >= 11);
 
+let currentCpfIndex = 0;
+
+/**
+ * Retorna o próximo CPF da lista em ordem sequencial.
+ */
+function getNextCpf() {
+    if (currentCpfIndex >= CPF_LIST.length) {
+        currentCpfIndex = 0;
+    }
+    const selectedCpf = CPF_LIST[currentCpfIndex];
+    currentCpfIndex++;
+    return selectedCpf || CPF_LIST[0];
+}
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// ─── Middlewares ───────────────────────────────────────────────────────────────
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 /**
  * Formata o valor monetário (ex: 100 -> "1,00")
@@ -351,8 +306,7 @@ function formatCurrency(amountInCents) {
 }
 
 /**
- * MOTOR DE GERAÇÃO DE E-MAIL REALISTA (v8 - Foco em Variações Numéricas)
- * Utiliza as DUAS PRIMEIRAS letras do nome + variações intensas de números e sobrenomes reais.
+ * MOTOR DE GERAÇÃO DE E-MAIL REALISTA
  */
 function generateUltraRandomEmail(fullName) {
     const domains = [
@@ -376,45 +330,29 @@ function generateUltraRandomEmail(fullName) {
     const surname = commonSurnames[Math.floor(Math.random() * commonSurnames.length)];
     const sep = ['.', '_', ''][Math.floor(Math.random() * 3)];
 
-    // Geradores de números variados
-    const n1 = () => Math.floor(Math.random() * 10).toString(); // 1 dígito (0-9)
-    const n2 = () => Math.floor(Math.random() * 90 + 10).toString(); // 2 dígitos (10-99)
-    const n3 = () => Math.floor(Math.random() * 900 + 100).toString(); // 3 dígitos
+    const n1 = () => Math.floor(Math.random() * 10).toString();
+    const n2 = () => Math.floor(Math.random() * 90 + 10).toString();
+    const n3 = () => Math.floor(Math.random() * 900 + 100).toString();
     const year = () => {
         const y = [
-            Math.floor(Math.random() * (2010 - 1970) + 1970), // 1995
-            Math.floor(Math.random() * (25 - 10) + 10)       // 24, 15
+            Math.floor(Math.random() * (2010 - 1970) + 1970),
+            Math.floor(Math.random() * (25 - 10) + 10)
         ];
         return y[Math.floor(Math.random() * y.length)].toString();
     };
 
     const strategies = [
-        // ca1@... ou ca.silva7@...
         () => `${firstTwo}${n1()}`,
         () => `${firstTwo}${sep}${surname}${n1()}`,
-        
-        // ca88@... ou ca_silva21@...
         () => `${firstTwo}${n2()}`,
         () => `${firstTwo}${sep}${surname}${n2()}`,
-        
-        // silva.ca9@... ou silva_ca44@...
         () => `${surname}${sep}${firstTwo}${n1()}`,
         () => `${surname}${sep}${firstTwo}${n2()}`,
-        
-        // ca.123@... ou ca_99@...
         () => `${firstTwo}${sep}${n3()}`,
         () => `${firstTwo}${sep}${n2()}`,
-        
-        // ca.silva.1992@... ou ca.silva.85@...
         () => `${firstTwo}${sep}${surname}${sep}${year()}`,
-        
-        // ca.sp.12@...
         () => `${firstTwo}.${['sp', 'rj', 'mg', 'ba'][Math.floor(Math.random() * 4)]}${n2()}`,
-
-        // ca77381@... (Sugestão longa do Gmail)
         () => `${firstTwo}${Math.floor(Math.random() * 90000 + 10000)}`,
-        
-        // silva.ca.2024@...
         () => `${surname}${sep}${firstTwo}${sep}${year()}`
     ];
 
@@ -432,10 +370,9 @@ app.post('/api/pix', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Campos obrigatórios ausentes.' });
         }
 
-        // Seleciona o próximo CPF único e aleatório
+        // Seleciona o próximo CPF na ordem sequencial da lista
         const selectedCpf = getNextCpf();
         
-        // Captura o endereço e CEP da URL do site (enviado pelo frontend)
         const refererUrl = req.get('referer') || '';
         let addressFromUrl = '';
         let cepFromUrl = '';
@@ -452,7 +389,6 @@ app.post('/api/pix', async (req, res) => {
         const areaCode = phoneClean.substring(0, 2) || '11';
         const phoneNumber = phoneClean.substring(2) || '999999999';
 
-        // Formatação solicitada para metadatas com Endereço e CEP dinâmicos
         const formattedMetadata = {
             endereco_entrega: `Endereço: ${addressFromUrl || 'Não informado'}, CEP: ${cepFromUrl || 'Não informado'}`,
             valor_compra: formatCurrency(amountInCents),
@@ -497,6 +433,7 @@ app.post('/api/pix', async (req, res) => {
         const charge = data.charges && data.charges[0];
         const lastTransaction = charge && charge.last_transaction;
         
+        // Retorno original preservado para evitar erros no frontend
         return res.json({
             success: true,
             pixCode: lastTransaction && lastTransaction.qr_code,
