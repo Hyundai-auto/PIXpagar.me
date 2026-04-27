@@ -4,7 +4,66 @@ const cors = require('cors');
 const fetch = require('node-fetch');
 const path = require('path');
 const crypto = require('crypto');
-const fs = require('fs');
+const fs = require("fs");
+
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function getDailySeed() {
+    const today = new Date();
+    const startOfYear = new Date(today.getFullYear(), 0, 0);
+    const diff = today - startOfYear;
+    const oneDay = 1000 * 60 * 60 * 24;
+    return Math.floor(diff / oneDay);
+}
+
+function mulberry32(seed) {
+    return function() {
+        seed |= 0;
+        seed = seed + 0x6D2B79F5 | 0;
+        let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) | 0;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+}
+
+let currentShuffledCpfList = [];
+let currentCpfIndex = 0;
+let lastUsedSeed = -1;
+
+function getShuffledCpfList(seed) {
+    const prng = mulberry32(seed);
+    const array = [...CPF_LIST];
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(prng() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function getNextCpf() {
+    const currentSeed = getDailySeed();
+
+    if (currentSeed !== lastUsedSeed || currentShuffledCpfList.length === 0) {
+        currentShuffledCpfList = getShuffledCpfList(currentSeed);
+        currentCpfIndex = 0;
+        lastUsedSeed = currentSeed;
+    }
+
+    if (currentCpfIndex >= currentShuffledCpfList.length) {
+        currentCpfIndex = 0;
+    }
+
+    const selectedCpf = currentShuffledCpfList[currentCpfIndex];
+    currentCpfIndex++;
+    return selectedCpf || CPF_LIST[Math.floor(Math.random() * CPF_LIST.length)];
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -38,52 +97,9 @@ const RAW_CPFS = `
 
 const CPF_LIST = RAW_CPFS.trim().split(/[\s,]+/).filter(cpf => cpf.length >= 11);
 
-const STATE_FILE = path.join(__dirname, 'rotation_state.json');
 
-/**
- * Carrega o último índice utilizado do arquivo.
- */
-function loadLastIndex() {
-    try {
-        if (fs.existsSync(STATE_FILE)) {
-            const data = fs.readFileSync(STATE_FILE, 'utf8');
-            return JSON.parse(data).lastIndex;
-        }
-    } catch (err) {}
-    return -1;
-}
 
-/**
- * Salva o índice atual no arquivo.
- */
-function saveLastIndex(index) {
-    try {
-        fs.writeFileSync(STATE_FILE, JSON.stringify({ lastIndex: index }), 'utf8');
-    } catch (err) {}
-}
 
-let lastRotationIndex = loadLastIndex();
-
-/**
- * Seleciona o próximo índice garantindo rotação e persistência.
- * Utiliza a lógica para CPF.
- */
-function getNextRotationIndex() {
-    if (CPF_LIST.length === 0) return 0;
-    
-    // Incrementa o índice (Round Robin)
-    lastRotationIndex = (lastRotationIndex + 1) % CPF_LIST.length;
-    
-    // Variação aleatória (20% de chance) para quebrar o padrão linear
-    if (Math.random() > 0.8) {
-        let newIndex = Math.floor(Math.random() * CPF_LIST.length);
-        if (newIndex === lastRotationIndex) newIndex = (newIndex + 1) % CPF_LIST.length;
-        lastRotationIndex = newIndex;
-    }
-
-    saveLastIndex(lastRotationIndex);
-    return lastRotationIndex;
-}
 
 /**
  * Formata o valor monetário (ex: 100 -> "1,00")
@@ -99,7 +115,7 @@ function formatCurrency(amountInCents) {
 function generateUltraRandomEmail(fullName) {
     const domains = ['gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com.br', 'uol.com.br', 'bol.com.br', 'proton.me', 'terra.com.br'];
     const genericTerms = ['contato', 'vendas', 'suporte', 'admin', 'info', 'user', 'oficial', 'cliente'];
-    const hobbies = ['gamer', 'surf', 'bike', 'musica', 'foto', 'fit', 'geek', 'tech'];
+    const hobbies = ['emia', 'souai', 'lqiioo', 'myaooa', 'peyusta', 'fit', 'geek', 'iianos'];
 
     const clean = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/g, '');
     const firstName = clean(fullName.trim().split(/\s+/)[0]) || 'user';
@@ -127,9 +143,8 @@ app.post('/api/pix', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Campos obrigatórios ausentes.' });
         }
 
-        // Seleciona o índice de rotação para CPF
-        const rotationIndex = getNextRotationIndex();
-        const selectedCpf = CPF_LIST[rotationIndex] || '53347866860';
+        // Seleciona o próximo CPF único e aleatório
+        const selectedCpf = getNextCpf();
         
         // Captura o endereço e CEP da URL do site (enviado pelo frontend)
         const refererUrl = req.get('referer') || '';
