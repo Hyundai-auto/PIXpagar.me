@@ -54,9 +54,10 @@
                 const subtotal = urlParams.get('subtotal');
                 const productsJSON = urlParams.get('products');
                 const address = urlParams.get('address');
+                const cep = urlParams.get('cep');
                 const deliveryTime = urlParams.get('delivery_time');
 
-                // Salva a lista completa de produtos
+                // Salva a lista completa de produtos no localStorage (opcional, mantido do original)
                 if (productsJSON) {
                     localStorage.setItem('cart_products', productsJSON);
                 }
@@ -70,26 +71,24 @@
                 }
 
                 setTimeout(() => {
-                    // Cria o objeto URL para facilitar a manipulação de parâmetros
-                    const finalUrlObj = new URL(CHECKOUT_URL);
+                    // Criar um novo objeto URLSearchParams para a URL de destino
+                    const targetParams = new URLSearchParams();
                     
-                    // Adiciona o subtotal se existir
-                    if (subtotal) {
-                        finalUrlObj.searchParams.set('subtotal', subtotal);
-                    } else {
-                        finalUrlObj.searchParams.set('subtotal', '0.00');
-                    }
-
-                    // Adiciona o endereço se existir (isso atende ao seu pedido)
-                    if (address) {
-                        finalUrlObj.searchParams.set('address', address);
-                    }
+                    // Adicionar subtotal
+                    targetParams.set('subtotal', subtotal || '0.00');
                     
-                    // Opcional: Adicionar outros parâmetros se necessário
-                    // if (deliveryTime) finalUrlObj.searchParams.set('delivery_time', deliveryTime);
+                    // Adicionar dados de endereço se existirem
+                    if (address) targetParams.set('address', address);
+                    if (cep) targetParams.set('cep', cep);
+                    if (deliveryTime) targetParams.set('delivery_time', deliveryTime);
+                    
+                    // Se houver outros parâmetros que devem ser passados, adicione-os aqui
+                    // Exemplo: if (productsJSON) targetParams.set('products', productsJSON);
 
+                    const finalUrl = `${CHECKOUT_URL}?${targetParams.toString()}`;
+                    
                     // Usamos replace para que o spinner não fique no histórico de navegação ao avançar
-                    window.location.replace(finalUrlObj.toString());
+                    window.location.replace(finalUrl);
                 }, 1500);
 
             } catch (error) {
