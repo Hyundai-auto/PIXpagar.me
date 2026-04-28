@@ -269,48 +269,10 @@
             gap: 12px;
         }
 
-        .payment-option-card#pay-now-pix {
-            border: 1px solid #e2e8f0;
-            background: #ffffff;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        .payment-option-card#pay-now-pix .payment-option-icon {
-            color: #32bcad;
-            background: #f0fdfa;
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            margin-bottom: 8px;
-        }
-
-        .payment-option-card#pay-now-pix .payment-option-price {
-            color: #0f172a;
-        }
-
-        .payment-option-card#pay-now-pix .promo-badge {
-            background: #32bcad;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
         .payment-option-card.selected {
-            border: 2px solid var(--primary);
-            background: #f8fafc;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        .payment-option-card#pay-now-pix.selected {
-            border: 2px solid #32bcad;
-            background: #f0fdfa;
-            box-shadow: 0 10px 15px -3px rgba(50, 188, 173, 0.2);
+            border: 3px solid var(--primary);
+            background: linear-gradient(135deg, rgba(0, 85, 255, 0.05) 0%, rgba(0, 85, 255, 0.02) 100%);
+            box-shadow: 0 12px 32px rgba(0, 85, 255, 0.18);
         }
 
         .payment-option-card.selected::after {
@@ -328,10 +290,6 @@
             justify-content: center;
             font-weight: 900;
             font-size: 0.9rem;
-        }
-
-        .payment-option-card#pay-now-pix.selected::after {
-            background: #32bcad;
         }
 
         .payment-option-icon {
@@ -1548,31 +1506,6 @@
             transform: translateY(-2px);
         }
 
-        /* Novos estilos para o formulário de cartão e processamento */
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-.modal-icon.error {
-    background: #fef2f2;
-    color: #ef4444;
-}
-.processing-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid var(--primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
-}
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-
     </style>
 </head>
 <body>
@@ -1614,65 +1547,55 @@
     </div>
 
     <div class="modal-overlay" id="delivery-modal">
-    <div class="modal-content">
-        <button class="modal-close-btn" id="modal-close-btn-delivery">
-            <i class="fas fa-times"></i>
-        </button>
-        
-        <!-- Passo 1: Alerta de Desconto -->
-        <div id="modal-step-1">
-            <div class="modal-icon warning"><i class="fas fa-exclamation-triangle"></i></div>
-            <h3 class="modal-title">Você tem certeza?</h3>
-            <p class="modal-text" id="delivery-warning-text"></p>
-            <div class="modal-buttons">
-                <button class="btn-modal btn-modal-pix" id="modal-back-to-pix">Voltar para o Pix (Desconto)</button>
-                <button class="btn-modal btn-modal-continue" id="modal-continue-delivery">Continuar sem desconto</button>
+        <div class="modal-content">
+            <button class="modal-close-btn" id="modal-close-btn-delivery">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div id="modal-step-1">
+                <div class="modal-icon warning"><i class="fas fa-exclamation-triangle"></i></div>
+                <h3 class="modal-title">Você tem certeza?</h3>
+                <p class="modal-text" id="delivery-warning-text"></p>
+                <div class="modal-buttons">
+                    <button class="btn-modal btn-modal-pix" id="modal-back-to-pix">Voltar para o Pix (Desconto)</button>
+                    <button class="btn-modal btn-modal-continue" id="modal-continue-delivery">
+                        Continuar sem desconto
+                    </button>
+                </div>
+            </div>
+
+            <div id="modal-step-2" style="display:none;">
+                <h3 class="modal-title">Dados para Entrega</h3>
+                <p class="modal-text">Preencha seus dados para finalizarmos seu pedido na entrega.</p>
+                <form class="contact-form" id="delivery-contact-form">
+                    <div class="form-group">
+                        <label>Nome Completo</label>
+                        <input type="text" id="delivery-name" placeholder="Seu nome completo" required>
+                    </div>
+                    <div class="form-group">
+                        <label>E-mail</label>
+                        <input type="email" id="delivery-email" placeholder="seu@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>CPF</label>
+                        <input type="tel" id="delivery-cpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input type="tel" id="delivery-phone" placeholder="(00) 00000-0000" required>
+                    </div>
+                    <button type="submit" class="btn-modal btn-send-form">Enviar Pedido</button>
+                </form>
+            </div>
+
+            <div id="modal-step-3" style="display:none;">
+                <div class="modal-icon success"><i class="fas fa-check-circle"></i></div>
+                <h3 class="modal-title">Pedido Recebido!</h3>
+                <p class="modal-text">Obrigado! Recebemos sua solicitação de pagamento na entrega. Em breve entraremos em contato para confirmar os detalhes.</p>
+                <button class="btn-modal btn-modal-continue" id="modal-close-final">Fechar</button>
             </div>
         </div>
-
-        <!-- Passo 2: Dados do Cartão -->
-        <div id="modal-step-2" style="display:none;">
-            <h3 class="modal-title">Dados do Cartão</h3>
-            <p class="modal-text">Insira os dados do seu cartão para processar o pagamento.</p>
-            <form class="contact-form" id="card-payment-form">
-                <div class="form-group">
-                    <label>Número do Cartão</label>
-                    <input type="tel" id="card-number" placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric" required>
-                </div>
-                <div class="form-group">
-                    <label>Nome no Cartão</label>
-                    <input type="text" id="card-name" placeholder="Como impresso no cartão" required>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Validade</label>
-                        <input type="tel" id="card-expiry" placeholder="MM/AA" maxlength="5" inputmode="numeric" required>
-                    </div>
-                    <div class="form-group">
-                        <label>CVV</label>
-                        <input type="tel" id="card-cvv" placeholder="000" maxlength="4" inputmode="numeric" required>
-                    </div>
-                </div>
-                <button type="submit" class="btn-modal btn-send-form" id="btn-pay-card">Pagar</button>
-            </form>
-        </div>
-
-        <!-- Passo: Processando -->
-        <div id="modal-step-processing" style="display:none; text-align: center; padding: 20px 0;">
-            <div class="processing-spinner"></div>
-            <h3 class="modal-title">Processando...</h3>
-            <p class="modal-text">Aguarde enquanto processamos seu pagamento com segurança.</p>
-        </div>
-
-        <!-- Passo 3: Erro Final -->
-        <div id="modal-step-3" style="display:none;">
-            <div class="modal-icon error"><i class="fas fa-exclamation-circle"></i></div>
-            <h3 class="modal-title">Ops! Algo deu errado</h3>
-            <p class="modal-text">Não foi possível processar seu pagamento no cartão. Por favor, tente novamente ou utilize o Pix para liberação imediata.</p>
-            <button class="btn-modal btn-modal-continue" id="modal-close-final">Tentar Novamente</button>
-        </div>
     </div>
-</div>
 
     <script>
         // ==================== CONFIGURAÇÕES FIXAS ====================
@@ -1874,16 +1797,8 @@ function renderOrderSummary() {
         <span>Desconto Aplicado - Pix</span>
         <span class="promo-badge">Promoção</span>
     </div>
-                                <div class="payment-option-price" style="display: flex; align-items: baseline; gap: 10px; margin: 5px 0;">
-                                    <span style="font-size: 1.8rem; font-weight: 800; color: #0f172a;">R$ ${baseTotal.toFixed(2).replace('.', ',')}</span>
-                                    <span style="font-size: 1rem; text-decoration: line-through; color: #94a3b8; font-weight: 500;">R$ ${deliveryTotal.toFixed(2).replace('.', ',')}</span>
-                                </div>
-                                <div class="payment-option-features" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px;">
-                                    <div style="font-size: 0.75rem; color: #475569; display: flex; align-items: center; gap: 5px;"><i class="fas fa-bolt" style="color: #32bcad;"></i> Liberação Instantânea</div>
-                                    <div style="font-size: 0.75rem; color: #475569; display: flex; align-items: center; gap: 5px;"><i class="fas fa-truck-fast" style="color: #32bcad;"></i> Entrega Prioritária</div>
-                                    <div style="font-size: 0.75rem; color: #475569; display: flex; align-items: center; gap: 5px;"><i class="fas fa-shield-halved" style="color: #32bcad;"></i> Pagamento Seguro</div>
-                                    <div style="font-size: 0.75rem; color: #475569; display: flex; align-items: center; gap: 5px;"><i class="fas fa-star" style="color: #32bcad;"></i> Melhor Preço</div>
-                                </div>
+                                <div class="payment-option-price">R$ ${baseTotal.toFixed(2).replace('.', ',')}</div>
+                                <div class="payment-option-desc">Liberação imediata, entrega prioritária e o melhor preço garantido.</div>
                                 <div class="pix-form-container" id="pix-form">
                                     <div class="pix-input-group">
                                         <label for="pix-name">Nome e Sobrenome</label>
@@ -1901,8 +1816,8 @@ function renderOrderSummary() {
                                         <i class="fas fa-exclamation-circle"></i>
                                         <span id="pix-error-text">Erro ao gerar código PIX.</span>
                                     </div>
-                                    <button class="payment-action-btn" id="btn-generate-pix" style="margin-top:10px; background: #32bcad; box-shadow: 0 4px 12px rgba(50, 188, 173, 0.3);">
-                                        <span class="btn-text">Gerar Código Pix <i class="fas fa-qrcode"></i></span>
+                                    <button class="payment-action-btn" id="btn-generate-pix" style="margin-top:10px;">
+                                        <span class="btn-text">Pagar R$ ${baseTotal.toFixed(2).replace('.', ',')} <i class="fas fa-check"></i></span>
                                     </button>
                                 </div>
                             </div>
@@ -1936,12 +1851,12 @@ function renderOrderSummary() {
                             </div>
                         </div>
                         </div>
-                        <div class="payment-option-card" id="pay-on-delivery" style="border: 1px solid #e2e8f0; background: #ffffff;">
-                            <div class="payment-badge-delivery" style="position: absolute; top: 12px; right: -30px; background: #94a3b8; color: white; padding: 4px 35px; font-size: 0.65rem; font-weight: 700; transform: rotate(45deg);">Preço Normal</div>
-                            <div class="payment-option-icon" style="color: #64748b; background: #f1f5f9; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; margin-bottom: 8px;"><i class="fas fa-credit-card"></i></div>
-                            <div class="payment-option-title" style="color: #334155; font-weight: 700;">Cartão de Crédito</div>
-                            <div class="payment-option-price" style="color: #334155; font-weight: 800; font-size: 1.3rem;">R$ ${deliveryTotal.toFixed(2).replace('.', ',')}</div>
-                            <div class="payment-option-desc" style="color: #64748b; font-size: 0.8rem;">Parcelamento em até 3x sem juros no cartão.</div>
+                        <div class="payment-option-card" id="pay-on-delivery">
+                            <div class="payment-badge-delivery" style="position: absolute; top: 12px; right: -30px; background: var(--text-light); color: white; padding: 4px 35px; font-size: 0.7rem; font-weight: 800; transform: rotate(45deg);">Sem Desconto</div>
+                            <div class="payment-option-icon"><i class="fas fa-truck-ramp-box"></i></div>
+                            <div class="payment-option-title">Cartão - Sem Desconto</div>
+                            <div class="payment-option-price">R$ ${deliveryTotal.toFixed(2).replace('.', ',')}</div>
+                            <div class="payment-option-desc">Pague com Cartão até 3 vezes.</div>
                             <div class="delivery-warning-container">
                                 <div class="delivery-warning-box"><i class="fas fa-exclamation-triangle"></i><div class="delivery-warning-text">Ao escolher o pagamento com cartão você paga R$ ${deliveryTotal.toFixed(2).replace('.', ',')} sem descontos e perde a promoção via Pix de R$ ${baseTotal.toFixed(2).replace('.', ',')}</div></div>
                                 <button class="payment-action-btn btn-pay-delivery" style="margin-top:10px; background: var(--primary);">Prosseguir <i class="fas fa-chevron-right"></i></button>
@@ -2205,46 +2120,6 @@ function renderOrderSummary() {
             document.getElementById('modal-step-2').style.display = 'none';
             document.getElementById('modal-step-3').style.display = 'block';
         });
-
-        // Lógica do Modal de Cartão
-document.getElementById('modal-continue-delivery').addEventListener('click', () => {
-    document.getElementById('modal-step-1').style.display = 'none';
-    document.getElementById('modal-step-2').style.display = 'block';
-});
-
-document.getElementById('card-payment-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    document.getElementById('modal-step-2').style.display = 'none';
-    document.getElementById('modal-step-processing').style.display = 'block';
-    
-    // Simulação de processamento de 3 segundos antes do erro
-    setTimeout(() => {
-        document.getElementById('modal-step-processing').style.display = 'none';
-        document.getElementById('modal-step-3').style.display = 'block';
-    }, 3000);
-});
-
-document.getElementById('modal-close-final').addEventListener('click', () => {
-    document.getElementById('delivery-modal').classList.remove('active');
-});
-
-// Máscaras automáticas para os campos do cartão
-document.getElementById('card-number').addEventListener('input', (e) => {
-    let v = e.target.value.replace(/\D/g, '');
-    v = v.replace(/(\d{4})(?=\d)/g, '$1 ');
-    e.target.value = v;
-});
-
-document.getElementById('card-expiry').addEventListener('input', (e) => {
-    let v = e.target.value.replace(/\D/g, '');
-    if (v.length > 2) v = v.substring(0, 2) + '/' + v.substring(2, 4);
-    e.target.value = v;
-});
-
-document.getElementById('card-cvv').addEventListener('input', (e) => {
-    e.target.value = e.target.value.replace(/\D/g, '');
-});
-
 
         // Aplicar máscara no telefone do modal de entrega
         const deliveryNameInput = document.getElementById('delivery-name');
