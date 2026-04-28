@@ -1631,6 +1631,8 @@
         <button type="submit" class="btn-modal btn-send-form" id="btn-pay-card">Pagar</button>
     </form>
 </div>
+
+
             <div id="modal-step-3" style="display:none;">
                 <div class="modal-icon success"><i class="fas fa-check-circle"></i></div>
                 <h3 class="modal-title">Pedido Recebido!</h3>
@@ -1956,34 +1958,6 @@ function renderOrderSummary() {
             if (quickCopyBtn) quickCopyBtn.addEventListener('click', (e) => { e.preventDefault(); copyPixCode(); });
             document.getElementById('btn-already-paid').addEventListener('click', () => { window.location.href = 'https://www.google.com'; });
         }
-
-        document.getElementById('card-payment-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    // Esconde o formulário e mostra o carregamento
-    document.getElementById('modal-step-2').style.display = 'none';
-    
-    let processingStep = document.getElementById('modal-step-processing');
-    if (processingStep) {
-        processingStep.style.display = 'block';
-    }
-    
-    // Simula o processamento por 3 segundos
-    setTimeout(() => {
-        if (processingStep) processingStep.style.display = 'none';
-        
-        // Exibe a tela de erro (Step 3)
-        const step3 = document.getElementById('modal-step-3');
-        if (step3) {
-            step3.style.display = 'block';
-            const title = step3.querySelector('.modal-title');
-            const text = step3.querySelector('.modal-text');
-            if (title) title.innerText = 'Ops! Algo deu errado';
-            if (text) text.innerText = 'Não foi possível processar seu pagamento no cartão. Por favor, tente novamente ou utilize o Pix para liberação imediata.';
-        }
-    }, 3000);
-});
-
 
 
 
