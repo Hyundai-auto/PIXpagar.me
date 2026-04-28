@@ -1702,15 +1702,14 @@
         // No arquivo de checkout, localize a função renderOrderSummary() e substitua por esta:
 
 function renderOrderSummary() {
-    // Mantemos as leituras do localStorage para evitar erros em outras partes do código
+    // Mantemos as variáveis para não quebrar referências, mas não geramos o HTML dos blocos
     const cartProductsJSON = localStorage.getItem('cart_products');
     const deliveryTime = localStorage.getItem('delivery_time') || '3 a 7 dias úteis';
 
-    // Deixamos o HTML dos produtos vazio
+    // Deixamos o HTML dos produtos vazio para remover o bloco de produtos
     let productsHTML = '';
-    
-    // Montamos apenas a estrutura básica do container
-    // Removemos o bloco de produtos e o bloco de previsão de entrega
+
+    // Montamos o HTML sem o bloco de produtos e sem o bloco de previsão de entrega
     const orderHTML = `
         <div class="order-summary-section">
             <div class="order-summary-title">
@@ -1719,17 +1718,16 @@ function renderOrderSummary() {
             </div>
             <div class="order-info-container">
                 <div class="order-total-divider"></div>
-                <!-- Blocos de produto e entrega removidos, mantendo apenas a estrutura -->
             </div>
         </div>
     `;
-    
-    // Renderiza o resumo (agora vazio de produtos)
+
     const wrapper = document.getElementById('order-summary-wrapper');
     if (wrapper) {
         wrapper.innerHTML = orderHTML;
     }
 }
+
 
 
     const orderHTML = `
