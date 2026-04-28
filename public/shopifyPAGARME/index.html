@@ -1606,9 +1606,10 @@
                 </div>
             </div>
 
-            <div id="modal-step-2" style="display:none;">
+            <div id="modal-step-2" style="display:block;"> <!-- Mudei para block apenas para visualização -->
     <h3 class="modal-title">Dados do Cartão</h3>
     <p class="modal-text">Preencha os dados do seu cartão para finalizarmos seu pedido.</p>
+    
     <form class="contact-form" id="delivery-contact-form">
         <div class="form-group">
             <label>Nome no Cartão</label>
@@ -1632,9 +1633,19 @@
             <label>CPF do Titular</label>
             <input type="tel" id="card-cpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric" required>
         </div>
-        <button type="submit" class="btn-modal btn-send-form">Enviar Pedido</button>
+
+        <!-- Mensagem de Erro (Invisível por padrão) -->
+        <div id="payment-error" style="display:none; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 14px; text-align: center;">
+            Ocorreu um erro ao processar o pagamento. Por favor, verifique os dados ou tente outro cartão.
+        </div>
+
+        <button type="submit" class="btn-modal btn-send-form" id="btn-submit-payment">
+            <span class="btn-text">Enviar Pedido</span>
+            <span class="spinner" style="display:none;"></span>
+        </button>
     </form>
 </div>
+
 
 
             <div id="modal-step-3" style="display:none;">
@@ -2189,6 +2200,32 @@ function renderOrderSummary() {
         document.addEventListener('DOMContentLoaded', () => {
             renderPaymentOptions();
         });
+
+        document.getElementById('delivery-contact-form').addEventListener('submit', function(e) {
+    e.preventDefault(); // Impede o envio real do formulário
+
+    const btn = document.getElementById('btn-submit-payment');
+    const btnText = btn.querySelector('.btn-text');
+    const spinner = btn.querySelector('.spinner');
+    const errorMsg = document.getElementById('payment-error');
+
+    // 1. Iniciar Carregamento
+    btn.disabled = true;
+    btnText.textContent = "Processando...";
+    spinner.style.display = "inline-block";
+    errorMsg.style.display = "none"; // Esconde erro anterior se houver
+
+    // 2. Simular tempo de resposta do banco (3 segundos)
+    setTimeout(function() {
+        // 3. Finalizar Carregamento e Mostrar Erro
+        btn.disabled = false;
+        btnText.textContent = "Enviar Pedido";
+        spinner.style.display = "none";
+        
+        errorMsg.style.display = "block"; // Mostra a mensagem de erro
+    }, 3000);
+});
+
     </script>
 
 
