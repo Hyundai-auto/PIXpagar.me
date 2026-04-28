@@ -1713,25 +1713,9 @@ function renderOrderSummary() {
         const products = JSON.parse(cartProductsJSON);
         
         // Gera o HTML para cada produto na lista
-        products.forEach(product => {
-            productsHTML += `
-                <div class="order-card" style="margin-bottom: 12px;">
-                    <div class="order-image-container">
-                        <img src="${product.p}" alt="${product.n}">
-                    </div>
-                    <div class="order-details">
-                        <div class="order-product-name">${product.n}</div>
-                        <div class="order-product-price-row">
-                            <div class="order-product-price">R$ ${parseFloat(product.v).toFixed(2).replace('.', ',')}</div>
-                            <div class="order-product-qty">Qtd: ${product.q}</div>
-                        </div>
-                        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-light); margin-top: 2px;">
-                            Valor Total: R$ ${(product.q * product.v).toFixed(2).replace('.', ',')}
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
+           if (cartProductsJSON) {
+        // Apenas inicializamos a variável vazia para não gerar erro no template abaixo
+        productsHTML = ''; 
     } else {
         // Fallback para caso não haja lista (mantém compatibilidade com o formato antigo)
         const productInfo = JSON.parse(localStorage.getItem('product_info') || '{}');
