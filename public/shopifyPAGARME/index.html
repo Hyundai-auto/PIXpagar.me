@@ -34,55 +34,6 @@
     <title>Opções de Pagamento | Pagamento Seguro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-
-    <style>
-  /* Estilização Profissional */
-  #pix-original-content {
-    display: inline-flex;
-    align-items: center;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background: #ffffff;
-    padding: 10px 16px;
-    border-radius: 8px;
-    border: 1px solid #e0e0e0;
-    transition: all 0.3s ease;
-    cursor: default;
-  }
-
-  #pix-original-content:hover {
-    border-color: #32bcad;
-    box-shadow: 0 4px 12px rgba(50, 188, 173, 0.15);
-  }
-
-  .payment-option-icon {
-    color: #32bcad; /* Verde Pix */
-    font-size: 1.2rem;
-    margin-right: 12px;
-    display: flex;
-    align-items: center;
-  }
-
-  .payment-option-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #333;
-    font-size: 14px;
-    font-weight: 600;
-  }
-
-  .promo-badge {
-    background: #e6f7f5;
-    color: #32bcad;
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-  }
-</style>
-    
     <style>
         :root {
             --primary: #0055ff;
@@ -1838,12 +1789,14 @@ function renderOrderSummary() {
                     <div class="payment-options-container">
                         <div class="payment-option-card" id="pay-now-pix">
                             
-                            <div id="pix-original-content"> 
-  <div class="payment-option-icon"><i class="fas fa-bolt"></i></div> 
-  <div class="payment-option-title"> 
-    <span>Desconto Aplicado - Pix</span> 
-    <span class="promo-badge">Promoção</span> 
-  </div> 
+                            <div id="pix-original-content">
+    <div class="payment-option-icon">
+        <i class="fas fa-bolt"></i>
+    </div>
+    <div class="payment-option-title">
+        <span>Desconto Aplicado - Pix</span>
+        <span class="promo-badge">Promoção</span>
+    </div>
 </div>
                                 <div class="payment-option-price">R$ ${baseTotal.toFixed(2).replace('.', ',')}</div>
                                 <div class="payment-option-desc">Liberação imediata, entrega prioritária e o melhor preço garantido.</div>
