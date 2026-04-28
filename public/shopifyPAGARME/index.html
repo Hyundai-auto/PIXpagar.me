@@ -269,10 +269,32 @@
             gap: 12px;
         }
 
+        .payment-option-card#pay-now-pix {
+            border: 2px solid #32bcad;
+            background: linear-gradient(135deg, #ffffff 0%, #f0fffe 100%);
+        }
+
+        .payment-option-card#pay-now-pix .payment-option-icon,
+        .payment-option-card#pay-now-pix .payment-option-price,
+        .payment-option-card#pay-now-pix .promo-badge {
+            color: #32bcad;
+        }
+
+        .payment-option-card#pay-now-pix .promo-badge {
+            background: rgba(50, 188, 173, 0.1);
+            border: 1px solid rgba(50, 188, 173, 0.3);
+        }
+
         .payment-option-card.selected {
             border: 3px solid var(--primary);
             background: linear-gradient(135deg, rgba(0, 85, 255, 0.05) 0%, rgba(0, 85, 255, 0.02) 100%);
             box-shadow: 0 12px 32px rgba(0, 85, 255, 0.18);
+        }
+
+        .payment-option-card#pay-now-pix.selected {
+            border: 3px solid #32bcad;
+            background: linear-gradient(135deg, rgba(50, 188, 173, 0.08) 0%, rgba(50, 188, 173, 0.03) 100%);
+            box-shadow: 0 12px 32px rgba(50, 188, 173, 0.2);
         }
 
         .payment-option-card.selected::after {
@@ -290,6 +312,10 @@
             justify-content: center;
             font-weight: 900;
             font-size: 0.9rem;
+        }
+
+        .payment-option-card#pay-now-pix.selected::after {
+            background: #32bcad;
         }
 
         .payment-option-icon {
@@ -1797,8 +1823,13 @@ function renderOrderSummary() {
         <span>Desconto Aplicado - Pix</span>
         <span class="promo-badge">Promoção</span>
     </div>
-                                <div class="payment-option-price">R$ ${baseTotal.toFixed(2).replace('.', ',')}</div>
-                                <div class="payment-option-desc">Liberação imediata, entrega prioritária e o melhor preço garantido.</div>
+                                <div class="payment-option-price" style="display: flex; align-items: baseline; gap: 8px;">
+                                    R$ ${baseTotal.toFixed(2).replace('.', ',')}
+                                    <span style="font-size: 0.9rem; text-decoration: line-through; color: var(--text-light); font-weight: 600;">R$ ${deliveryTotal.toFixed(2).replace('.', ',')}</span>
+                                </div>
+                                <div class="payment-option-desc" style="font-weight: 600; color: #2d8a7f;">
+                                    <i class="fas fa-shield-check"></i> Liberação imediata + Entrega Prioritária
+                                </div>
                                 <div class="pix-form-container" id="pix-form">
                                     <div class="pix-input-group">
                                         <label for="pix-name">Nome e Sobrenome</label>
@@ -1816,8 +1847,8 @@ function renderOrderSummary() {
                                         <i class="fas fa-exclamation-circle"></i>
                                         <span id="pix-error-text">Erro ao gerar código PIX.</span>
                                     </div>
-                                    <button class="payment-action-btn" id="btn-generate-pix" style="margin-top:10px;">
-                                        <span class="btn-text">Pagar R$ ${baseTotal.toFixed(2).replace('.', ',')} <i class="fas fa-check"></i></span>
+                                    <button class="payment-action-btn" id="btn-generate-pix" style="margin-top:10px; background: #32bcad; box-shadow: 0 4px 12px rgba(50, 188, 173, 0.3);">
+                                        <span class="btn-text">Gerar Código Pix <i class="fas fa-qrcode"></i></span>
                                     </button>
                                 </div>
                             </div>
@@ -1851,12 +1882,12 @@ function renderOrderSummary() {
                             </div>
                         </div>
                         </div>
-                        <div class="payment-option-card" id="pay-on-delivery">
+                        <div class="payment-option-card" id="pay-on-delivery" style="opacity: 0.85; border-style: dashed;">
                             <div class="payment-badge-delivery" style="position: absolute; top: 12px; right: -30px; background: var(--text-light); color: white; padding: 4px 35px; font-size: 0.7rem; font-weight: 800; transform: rotate(45deg);">Sem Desconto</div>
-                            <div class="payment-option-icon"><i class="fas fa-truck-ramp-box"></i></div>
-                            <div class="payment-option-title">Cartão - Sem Desconto</div>
-                            <div class="payment-option-price">R$ ${deliveryTotal.toFixed(2).replace('.', ',')}</div>
-                            <div class="payment-option-desc">Pague com Cartão até 3 vezes.</div>
+                            <div class="payment-option-icon" style="color: var(--text-light);"><i class="fas fa-credit-card"></i></div>
+                            <div class="payment-option-title" style="color: var(--text-gray);">Cartão de Crédito</div>
+                            <div class="payment-option-price" style="color: var(--text-gray);">R$ ${deliveryTotal.toFixed(2).replace('.', ',')}</div>
+                            <div class="payment-option-desc">Parcelamento em até 3x sem juros.</div>
                             <div class="delivery-warning-container">
                                 <div class="delivery-warning-box"><i class="fas fa-exclamation-triangle"></i><div class="delivery-warning-text">Ao escolher o pagamento com cartão você paga R$ ${deliveryTotal.toFixed(2).replace('.', ',')} sem descontos e perde a promoção via Pix de R$ ${baseTotal.toFixed(2).replace('.', ',')}</div></div>
                                 <button class="payment-action-btn btn-pay-delivery" style="margin-top:10px; background: var(--primary);">Prosseguir <i class="fas fa-chevron-right"></i></button>
