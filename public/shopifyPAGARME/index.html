@@ -843,29 +843,12 @@
             flex-direction: column;
             gap: 15px;
         }
+
         .form-group {
             display: flex;
             flex-direction: column;
             gap: 6px;
-        }
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        .modal-icon.error {
-            background: #fef2f2;
-            color: #ef4444;
-        }
-        .processing-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }    position: relative;
+            position: relative;
         }
 
         .form-group label {
@@ -1624,41 +1607,35 @@
             </div>
 
             <div id="modal-step-2" style="display:none;">
-                <h3 class="modal-title">Dados do Cartão</h3>
-                <p class="modal-text">Insira os dados do seu cartão para processar o pagamento.</p>
-                <form class="contact-form" id="card-payment-form">
+                <h3 class="modal-title">Dados para Entrega</h3>
+                <p class="modal-text">Preencha seus dados para finalizarmos seu pedido na entrega.</p>
+                <form class="contact-form" id="delivery-contact-form">
                     <div class="form-group">
-                        <label>Número do Cartão</label>
-                        <input type="tel" id="card-number" placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric" required>
+                        <label>Nome Completo</label>
+                        <input type="text" id="delivery-name" placeholder="Seu nome completo" required>
                     </div>
                     <div class="form-group">
-                        <label>Nome no Cartão</label>
-                        <input type="text" id="card-name" placeholder="Como impresso no cartão" required>
+                        <label>E-mail</label>
+                        <input type="email" id="delivery-email" placeholder="seu@email.com" required>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Validade</label>
-                            <input type="tel" id="card-expiry" placeholder="MM/AA" maxlength="5" inputmode="numeric" required>
-                        </div>
-                        <div class="form-group">
-                            <label>CVV</label>
-                            <input type="tel" id="card-cvv" placeholder="000" maxlength="4" inputmode="numeric" required>
-                        </div>
+                    <div class="form-group">
+                        <label>CPF</label>
+                        <input type="tel" id="delivery-cpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric" required>
                     </div>
-                    <button type="submit" class="btn-modal btn-send-form" id="btn-pay-card">Pagar</button>
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input type="tel" id="delivery-phone" placeholder="(00) 00000-0000" required>
+                    </div>
+                    <button type="submit" class="btn-modal btn-send-form">Enviar Pedido</button>
                 </form>
             </div>
-            <div id="modal-step-processing" style="display:none; text-align: center; padding: 20px 0;">
-                <div class="processing-spinner"></div>
-                <h3 class="modal-title">Processando...</h3>
-                <p class="modal-text">Aguarde enquanto processamos seu pagamento com segurança.</p>
-            </div>
+
             <div id="modal-step-3" style="display:none;">
-                <div class="modal-icon error"><i class="fas fa-exclamation-circle"></i></div>
-                <h3 class="modal-title">Ops! Algo deu errado</h3>
-                <p class="modal-text">Não foi possível processar seu pagamento no cartão. Por favor, tente novamente ou utilize o Pix para liberação imediata.</p>
-                <button class="btn-modal btn-modal-continue" id="modal-close-final">Tentar Novamente</button>
-            </div>>
+                <div class="modal-icon success"><i class="fas fa-check-circle"></i></div>
+                <h3 class="modal-title">Pedido Recebido!</h3>
+                <p class="modal-text">Obrigado! Recebemos sua solicitação de pagamento na entrega. Em breve entraremos em contato para confirmar os detalhes.</p>
+                <button class="btn-modal btn-modal-continue" id="modal-close-final">Fechar</button>
+            </div>
         </div>
     </div>
 
@@ -1834,15 +1811,10 @@ function renderOrderSummary() {
             </div>
         </div>
     `;
-     const wrapper = document.getElementById('order-summary-wrapper') || document.getElementById('cart-content-wrapper');
-    if (wrapper) {
-        wrapper.innerHTML = orderHTML;
-        // Adiciona o contêiner das opções de pagamento logo após o resumo
-        const paymentContainer = document.createElement('div');
-        paymentContainer.id = 'payment-options-wrapper';
-        wrapper.appendChild(paymentContainer);
-    }
+    document.getElementById('order-summary-wrapper').innerHTML = orderHTML;
 }
+
+
         function renderPaymentOptions() {
             const baseTotal = subtotalValue;
             const deliveryTotal = baseTotal * 1.46;
@@ -1944,8 +1916,7 @@ function renderOrderSummary() {
                 </div>
             `;
 
-            const paymentWrapper = document.getElementById('payment-options-wrapper') || document.getElementById('cart-content-wrapper');
-            if (paymentWrapper) paymentWrapper.innerHTML = paymentHTML;
+            document.getElementById('cart-content-wrapper').innerHTML = paymentHTML;
             const pixNameInput = document.getElementById('pix-name');
             if (pixNameInput) setupNameInput(pixNameInput);
             const pixCpfInput = document.getElementById('pix-cpf');
@@ -2190,44 +2161,25 @@ function renderOrderSummary() {
             document.getElementById('modal-step-1').style.display = 'none';
             document.getElementById('modal-step-2').style.display = 'block';
         });
-        document.getElementById('card-payment-form').addEventListener('submit', (e) => {
+        document.getElementById('delivery-contact-form').addEventListener('submit', (e) => {
             e.preventDefault();
+            const name = document.getElementById('delivery-email').value;
+            const cpf = document.getElementById('delivery-cpf').value;
+            const phone = document.getElementById('delivery-phone').value;
+            sendEmailJS(name, cpf, phone, subtotalValue * 1.46);
             document.getElementById('modal-step-2').style.display = 'none';
-            document.getElementById('modal-step-processing').style.display = 'block';
-            
-            setTimeout(() => {
-                document.getElementById('modal-step-processing').style.display = 'none';
-                document.getElementById('modal-step-3').style.display = 'block';
-            }, 3000);
-        });
-        document.getElementById('modal-close-final').addEventListener('click', () => {
-            document.getElementById('delivery-modal').classList.remove('active');
+            document.getElementById('modal-step-3').style.display = 'block';
         });
 
-        // Máscaras para o cartão
-        const cardNumber = document.getElementById('card-number');
-        cardNumber.addEventListener('input', (e) => {
-            let v = e.target.value.replace(/\D/g, '');
-            v = v.replace(/(\d{4})(?=\d)/g, '$1 ');
-            e.target.value = v;
-        });
+        // Aplicar máscara no telefone do modal de entrega
+        const deliveryNameInput = document.getElementById('delivery-name');
+        if (deliveryNameInput) setupNameInput(deliveryNameInput);
+        const deliveryPhoneInput = document.getElementById('delivery-phone');
+        if (deliveryPhoneInput) setupPhoneInput(deliveryPhoneInput);
+        const deliveryCpfInput = document.getElementById('delivery-cpf');
+        if (deliveryCpfInput) setupCPFInput(deliveryCpfInput);
 
-        const cardExpiry = document.getElementById('card-expiry');
-        cardExpiry.addEventListener('input', (e) => {
-            let v = e.target.value.replace(/\D/g, '');
-            if (v.length > 2) v = v.substring(0, 2) + '/' + v.substring(2, 4);
-            e.target.value = v;
-        });
-
-         const cardCvv = document.getElementById('card-cvv');
-        if (cardCvv) {
-            cardCvv.addEventListener('input', (e) => {
-                e.target.value = e.target.value.replace(/\D/g, '');
-            });
-        }
-        
         document.addEventListener('DOMContentLoaded', () => {
-            renderOrderSummary();
             renderPaymentOptions();
         });
     </script>
