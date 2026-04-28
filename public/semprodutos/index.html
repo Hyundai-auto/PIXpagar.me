@@ -1544,7 +1544,7 @@
             </div>
         </div>
 
-        <div id="order-summary-wrapper"></div>
+
         <div id="cart-content-wrapper"></div>
     </div>
 
@@ -1702,33 +1702,53 @@
         // No arquivo de checkout, localize a função renderOrderSummary() e substitua por esta:
 
 function renderOrderSummary() {
-    // Mantemos as variáveis para não quebrar referências, mas não geramos o HTML dos blocos
+    // Tenta pegar a lista completa de produtos do localStorage
     const cartProductsJSON = localStorage.getItem('cart_products');
+    const deliveryAddress = localStorage.getItem('delivery_address') || 'Endereço não informado';
     const deliveryTime = localStorage.getItem('delivery_time') || '3 a 7 dias úteis';
 
-    // Deixamos o HTML dos produtos vazio para remover o bloco de produtos
     let productsHTML = '';
-
-    // Montamos o HTML sem o bloco de produtos e sem o bloco de previsão de entrega
-    const orderHTML = `
-        <div class="order-summary-section">
-            <div class="order-summary-title">
-                <span><i class="fas fa-shopping-bag"></i> Resumo do Pedido</span>
-                <span class="order-summary-badge">Verificado</span>
+    
+    if (cartProductsJSON) {
+        const products = JSON.parse(cartProductsJSON);
+        
+        // Gera o HTML para cada produto na lista
+        products.forEach(product => {
+            productsHTML += `
+                <div class="order-card" style="margin-bottom: 12px;">
+                    <div class="order-image-container">
+                        <img src="${product.p}" alt="${product.n}">
+                    </div>
+                    <div class="order-details">
+                        <div class="order-product-name">${product.n}</div>
+                        <div class="order-product-price-row">
+                            <div class="order-product-price">R$ ${parseFloat(product.v).toFixed(2).replace('.', ',')}</div>
+                            <div class="order-product-qty">Qtd: ${product.q}</div>
+                        </div>
+                        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-light); margin-top: 2px;">
+                            Valor Total: R$ ${(product.q * product.v).toFixed(2).replace('.', ',')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    } else {
+        // Fallback para caso não haja lista (mantém compatibilidade com o formato antigo)
+        const productInfo = JSON.parse(localStorage.getItem('product_info') || '{}');
+        productsHTML = `
+            <div class="order-card">
+                <div class="order-image-container">
+                    <img src="${productInfo.photo || 'https://via.placeholder.com/150'}" alt="${productInfo.name}">
+                </div>
+                <div class="order-details">
+                    <div class="order-product-name">${productInfo.name || 'Produto Selecionado'}</div>
+                    <div class="order-product-price-row">
+                        <div class="order-product-price">R$ ${parseFloat(productInfo.value || subtotalValue).toFixed(2).replace('.', ',')}</div>
+                    </div>
+                </div>
             </div>
-            <div class="order-info-container">
-                <div class="order-total-divider"></div>
-            </div>
-        </div>
-    `;
-
-    const wrapper = document.getElementById('order-summary-wrapper');
-    if (wrapper) {
-        wrapper.innerHTML = orderHTML;
+        `;
     }
-}
-
-
 
     const orderHTML = `
         <div class="order-summary-section">
@@ -2108,7 +2128,6 @@ function renderOrderSummary() {
         if (deliveryCpfInput) setupCPFInput(deliveryCpfInput);
 
         document.addEventListener('DOMContentLoaded', () => {
-            renderOrderSummary();
             renderPaymentOptions();
         });
     </script>
