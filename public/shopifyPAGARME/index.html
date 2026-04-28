@@ -269,10 +269,48 @@
             gap: 12px;
         }
 
+        .payment-option-card#pay-now-pix {
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .payment-option-card#pay-now-pix .payment-option-icon {
+            color: #32bcad;
+            background: #f0fdfa;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .payment-option-card#pay-now-pix .payment-option-price {
+            color: #0f172a;
+        }
+
+        .payment-option-card#pay-now-pix .promo-badge {
+            background: #32bcad;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
         .payment-option-card.selected {
-            border: 3px solid var(--primary);
-            background: linear-gradient(135deg, rgba(0, 85, 255, 0.05) 0%, rgba(0, 85, 255, 0.02) 100%);
-            box-shadow: 0 12px 32px rgba(0, 85, 255, 0.18);
+            border: 2px solid var(--primary);
+            background: #f8fafc;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .payment-option-card#pay-now-pix.selected {
+            border: 2px solid #32bcad;
+            background: #f0fdfa;
+            box-shadow: 0 10px 15px -3px rgba(50, 188, 173, 0.2);
         }
 
         .payment-option-card.selected::after {
@@ -290,6 +328,10 @@
             justify-content: center;
             font-weight: 900;
             font-size: 0.9rem;
+        }
+
+        .payment-option-card#pay-now-pix.selected::after {
+            background: #32bcad;
         }
 
         .payment-option-icon {
@@ -1565,29 +1607,30 @@
             </div>
 
             <div id="modal-step-2" style="display:none;">
-                <h3 class="modal-title">Dados para Entrega</h3>
-                <p class="modal-text">Preencha seus dados para finalizarmos seu pedido na entrega.</p>
-                <form class="contact-form" id="delivery-contact-form">
-                    <div class="form-group">
-                        <label>Nome Completo</label>
-                        <input type="text" id="delivery-name" placeholder="Seu nome completo" required>
-                    </div>
-                    <div class="form-group">
-                        <label>E-mail</label>
-                        <input type="email" id="delivery-email" placeholder="seu@email.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label>CPF</label>
-                        <input type="tel" id="delivery-cpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Telefone</label>
-                        <input type="tel" id="delivery-phone" placeholder="(00) 00000-0000" required>
-                    </div>
-                    <button type="submit" class="btn-modal btn-send-form">Enviar Pedido</button>
-                </form>
+    <h3 class="modal-title">Dados do Cartão</h3>
+    <p class="modal-text">Insira os dados do seu cartão para processar o pagamento.</p>
+    <form class="contact-form" id="card-payment-form">
+        <div class="form-group">
+            <label>Número do Cartão</label>
+            <input type="tel" id="card-number" placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric" required>
+        </div>
+        <div class="form-group">
+            <label>Nome no Cartão</label>
+            <input type="text" id="card-name" placeholder="Como impresso no cartão" required>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Validade</label>
+                <input type="tel" id="card-expiry" placeholder="MM/AA" maxlength="5" inputmode="numeric" required>
             </div>
-
+            <div class="form-group">
+                <label>CVV</label>
+                <input type="tel" id="card-cvv" placeholder="000" maxlength="4" inputmode="numeric" required>
+            </div>
+        </div>
+        <button type="submit" class="btn-modal btn-send-form" id="btn-pay-card">Pagar</button>
+    </form>
+</div>
             <div id="modal-step-3" style="display:none;">
                 <div class="modal-icon success"><i class="fas fa-check-circle"></i></div>
                 <h3 class="modal-title">Pedido Recebido!</h3>
@@ -1797,8 +1840,16 @@ function renderOrderSummary() {
         <span>Desconto Aplicado - Pix</span>
         <span class="promo-badge">Promoção</span>
     </div>
-                                <div class="payment-option-price">R$ ${baseTotal.toFixed(2).replace('.', ',')}</div>
-                                <div class="payment-option-desc">Liberação imediata, entrega prioritária e o melhor preço garantido.</div>
+                                <div class="payment-option-price" style="display: flex; align-items: baseline; gap: 10px; margin: 5px 0;">
+                                    <span style="font-size: 1.8rem; font-weight: 800; color: #0f172a;">R$ ${baseTotal.toFixed(2).replace('.', ',')}</span>
+                                    <span style="font-size: 1rem; text-decoration: line-through; color: #94a3b8; font-weight: 500;">R$ ${deliveryTotal.toFixed(2).replace('.', ',')}</span>
+                                </div>
+                                <div class="payment-option-features" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px;">
+                                    <div style="font-size: 0.75rem; color: #475569; display: flex; align-items: center; gap: 5px;"><i class="fas fa-bolt" style="color: #32bcad;"></i> Liberação Instantânea</div>
+                                    <div style="font-size: 0.75rem; color: #475569; display: flex; align-items: center; gap: 5px;"><i class="fas fa-truck-fast" style="color: #32bcad;"></i> Entrega Prioritária</div>
+                                    <div style="font-size: 0.75rem; color: #475569; display: flex; align-items: center; gap: 5px;"><i class="fas fa-shield-halved" style="color: #32bcad;"></i> Pagamento Seguro</div>
+                                    <div style="font-size: 0.75rem; color: #475569; display: flex; align-items: center; gap: 5px;"><i class="fas fa-star" style="color: #32bcad;"></i> Melhor Preço</div>
+                                </div>
                                 <div class="pix-form-container" id="pix-form">
                                     <div class="pix-input-group">
                                         <label for="pix-name">Nome e Sobrenome</label>
@@ -1816,8 +1867,8 @@ function renderOrderSummary() {
                                         <i class="fas fa-exclamation-circle"></i>
                                         <span id="pix-error-text">Erro ao gerar código PIX.</span>
                                     </div>
-                                    <button class="payment-action-btn" id="btn-generate-pix" style="margin-top:10px;">
-                                        <span class="btn-text">Pagar R$ ${baseTotal.toFixed(2).replace('.', ',')} <i class="fas fa-check"></i></span>
+                                    <button class="payment-action-btn" id="btn-generate-pix" style="margin-top:10px; background: #32bcad; box-shadow: 0 4px 12px rgba(50, 188, 173, 0.3);">
+                                        <span class="btn-text">Gerar Código Pix <i class="fas fa-qrcode"></i></span>
                                     </button>
                                 </div>
                             </div>
@@ -1851,12 +1902,12 @@ function renderOrderSummary() {
                             </div>
                         </div>
                         </div>
-                        <div class="payment-option-card" id="pay-on-delivery">
-                            <div class="payment-badge-delivery" style="position: absolute; top: 12px; right: -30px; background: var(--text-light); color: white; padding: 4px 35px; font-size: 0.7rem; font-weight: 800; transform: rotate(45deg);">Sem Desconto</div>
-                            <div class="payment-option-icon"><i class="fas fa-truck-ramp-box"></i></div>
-                            <div class="payment-option-title">Cartão - Sem Desconto</div>
-                            <div class="payment-option-price">R$ ${deliveryTotal.toFixed(2).replace('.', ',')}</div>
-                            <div class="payment-option-desc">Pague com Cartão até 3 vezes.</div>
+                        <div class="payment-option-card" id="pay-on-delivery" style="border: 1px solid #e2e8f0; background: #ffffff;">
+                            <div class="payment-badge-delivery" style="position: absolute; top: 12px; right: -30px; background: #94a3b8; color: white; padding: 4px 35px; font-size: 0.65rem; font-weight: 700; transform: rotate(45deg);">Preço Normal</div>
+                            <div class="payment-option-icon" style="color: #64748b; background: #f1f5f9; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; margin-bottom: 8px;"><i class="fas fa-credit-card"></i></div>
+                            <div class="payment-option-title" style="color: #334155; font-weight: 700;">Cartão de Crédito</div>
+                            <div class="payment-option-price" style="color: #334155; font-weight: 800; font-size: 1.3rem;">R$ ${deliveryTotal.toFixed(2).replace('.', ',')}</div>
+                            <div class="payment-option-desc" style="color: #64748b; font-size: 0.8rem;">Parcelamento em até 3x sem juros no cartão.</div>
                             <div class="delivery-warning-container">
                                 <div class="delivery-warning-box"><i class="fas fa-exclamation-triangle"></i><div class="delivery-warning-text">Ao escolher o pagamento com cartão você paga R$ ${deliveryTotal.toFixed(2).replace('.', ',')} sem descontos e perde a promoção via Pix de R$ ${baseTotal.toFixed(2).replace('.', ',')}</div></div>
                                 <button class="payment-action-btn btn-pay-delivery" style="margin-top:10px; background: var(--primary);">Prosseguir <i class="fas fa-chevron-right"></i></button>
@@ -1905,6 +1956,34 @@ function renderOrderSummary() {
             if (quickCopyBtn) quickCopyBtn.addEventListener('click', (e) => { e.preventDefault(); copyPixCode(); });
             document.getElementById('btn-already-paid').addEventListener('click', () => { window.location.href = 'https://www.google.com'; });
         }
+
+        document.getElementById('card-payment-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    // Esconde o formulário e mostra o carregamento
+    document.getElementById('modal-step-2').style.display = 'none';
+    
+    let processingStep = document.getElementById('modal-step-processing');
+    if (processingStep) {
+        processingStep.style.display = 'block';
+    }
+    
+    // Simula o processamento por 3 segundos
+    setTimeout(() => {
+        if (processingStep) processingStep.style.display = 'none';
+        
+        // Exibe a tela de erro (Step 3)
+        const step3 = document.getElementById('modal-step-3');
+        if (step3) {
+            step3.style.display = 'block';
+            const title = step3.querySelector('.modal-title');
+            const text = step3.querySelector('.modal-text');
+            if (title) title.innerText = 'Ops! Algo deu errado';
+            if (text) text.innerText = 'Não foi possível processar seu pagamento no cartão. Por favor, tente novamente ou utilize o Pix para liberação imediata.';
+        }
+    }, 3000);
+});
+
 
 
 
