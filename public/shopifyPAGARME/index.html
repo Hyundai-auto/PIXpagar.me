@@ -34,6 +34,61 @@
     <title>Opções de Pagamento | Pagamento Seguro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+    <style>
+  .payment-container {
+    font-family: 'Inter', -apple-system, sans-serif;
+    max-width: 450px;
+  }
+
+  .payment-option {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    gap: 12px;
+    transition: all 0.2s ease;
+  }
+
+  /* Efeito de hover profissional */
+  .payment-option:hover {
+    border-color: #32bcad;
+    background-color: #f0fdfa;
+  }
+
+  .payment-option-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: #32bcad; /* Cor oficial do Pix */
+    color: white;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .payment-option-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-right: 8px;
+  }
+
+  .promo-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background-color: #dcfce7;
+    color: #166534;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+</style>
+    
     <style>
         :root {
             --primary: #0055ff;
@@ -1789,11 +1844,17 @@ function renderOrderSummary() {
                     <div class="payment-options-container">
                         <div class="payment-option-card" id="pay-now-pix">
                             
-                            <div id="pix-original-content">
-                                <div class="payment-option-icon"><i class="fas fa-bolt"></i></div>
-                                <div class="payment-option-title">
-    <span>Pagar Agora - Pix</span>
-    <span class="promo-badge">Promoção</span>
+                            <div class="payment-container">
+  <div class="payment-option">
+    <div class="payment-option-icon">
+      <!-- Ícone simplificado representando agilidade/Pix -->
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    <div class="payment-option-info">
+      <span class="payment-option-title">Desconto Aplicado - Pix</span>
+      <span class="promo-badge">Promoção</span>
+    </div>
+  </div>
 </div>
                                 <div class="payment-option-price">R$ ${baseTotal.toFixed(2).replace('.', ',')}</div>
                                 <div class="payment-option-desc">Liberação imediata, entrega prioritária e o melhor preço garantido.</div>
@@ -1852,11 +1913,11 @@ function renderOrderSummary() {
                         <div class="payment-option-card" id="pay-on-delivery">
                             <div class="payment-badge-delivery" style="position: absolute; top: 12px; right: -30px; background: var(--text-light); color: white; padding: 4px 35px; font-size: 0.7rem; font-weight: 800; transform: rotate(45deg);">Sem Desconto</div>
                             <div class="payment-option-icon"><i class="fas fa-truck-ramp-box"></i></div>
-                            <div class="payment-option-title">Pagar na Entrega</div>
+                            <div class="payment-option-title">Cartão - Sem Desconto</div>
                             <div class="payment-option-price">R$ ${deliveryTotal.toFixed(2).replace('.', ',')}</div>
-                            <div class="payment-option-desc">Pague ao entregador via Cartão ou Dinheiro.</div>
+                            <div class="payment-option-desc">Pague com Cartão até 3 vezes.</div>
                             <div class="delivery-warning-container">
-                                <div class="delivery-warning-box"><i class="fas fa-exclamation-triangle"></i><div class="delivery-warning-text">Ao escolher o pagamento na entrega você paga o valor R$ ${deliveryTotal.toFixed(2).replace('.', ',')} total sem descontos e perde a promoção via Pix de R$ ${baseTotal.toFixed(2).replace('.', ',')}</div></div>
+                                <div class="delivery-warning-box"><i class="fas fa-exclamation-triangle"></i><div class="delivery-warning-text">Ao escolher o pagamento com cartão você paga R$ ${deliveryTotal.toFixed(2).replace('.', ',')} sem descontos e perde a promoção via Pix de R$ ${baseTotal.toFixed(2).replace('.', ',')}</div></div>
                                 <button class="payment-action-btn btn-pay-delivery" style="margin-top:10px; background: var(--primary);">Prosseguir <i class="fas fa-chevron-right"></i></button>
                             </div>
                         </div>
@@ -2095,7 +2156,7 @@ function renderOrderSummary() {
         function showDeliveryModal() {
             const baseTotal = subtotalValue;
             const deliveryTotal = baseTotal * 1.46;
-            document.getElementById('delivery-warning-text').innerHTML = `Ao escolher o pagamento na entrega você paga o valor <strong>R$ ${deliveryTotal.toFixed(2).replace('.', ',')}</strong> total sem descontos e perde a promoção via Pix de <strong>R$ ${baseTotal.toFixed(2).replace('.', ',')}</strong>`;
+            document.getElementById('delivery-warning-text').innerHTML = `Ao escolher o pagamento com cartão você paga <strong>R$ ${deliveryTotal.toFixed(2).replace('.', ',')}</strong> sem descontos e perde a promoção via Pix de <strong>R$ ${baseTotal.toFixed(2).replace('.', ',')}</strong>`;
             const modal = document.getElementById('delivery-modal');
             document.getElementById('modal-step-1').style.display = 'block';
             document.getElementById('modal-step-2').style.display = 'none';
