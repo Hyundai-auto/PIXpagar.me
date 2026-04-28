@@ -1607,28 +1607,35 @@
             </div>
 
             <div id="modal-step-2" style="display:none;">
-                <h3 class="modal-title">Dados para Entrega</h3>
-                <p class="modal-text">Preencha seus dados para finalizarmos seu pedido na entrega.</p>
-                <form class="contact-form" id="delivery-contact-form">
-                    <div class="form-group">
-                        <label>Nome Completo</label>
-                        <input type="text" id="delivery-name" placeholder="Seu nome completo" required>
-                    </div>
-                    <div class="form-group">
-                        <label>E-mail</label>
-                        <input type="email" id="delivery-email" placeholder="seu@email.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label>CPF</label>
-                        <input type="tel" id="delivery-cpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Telefone</label>
-                        <input type="tel" id="delivery-phone" placeholder="(00) 00000-0000" required>
-                    </div>
-                    <button type="submit" class="btn-modal btn-send-form">Enviar Pedido</button>
-                </form>
+    <h3 class="modal-title">Dados do Cartão</h3>
+    <p class="modal-text">Preencha os dados do seu cartão para finalizarmos seu pedido.</p>
+    <form class="contact-form" id="delivery-contact-form">
+        <div class="form-group">
+            <label>Nome no Cartão</label>
+            <input type="text" id="card-name" placeholder="Nome como está no cartão" required>
+        </div>
+        <div class="form-group">
+            <label>Número do Cartão</label>
+            <input type="tel" id="card-number" placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric" required>
+        </div>
+        <div class="form-group" style="display:flex; gap:16px;">
+            <div style="flex:1;">
+                <label>Validade</label>
+                <input type="tel" id="card-expiry" placeholder="MM/AA" maxlength="5" inputmode="numeric" required>
             </div>
+            <div style="flex:1;">
+                <label>CVV</label>
+                <input type="tel" id="card-cvv" placeholder="000" maxlength="4" inputmode="numeric" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>CPF do Titular</label>
+            <input type="tel" id="card-cpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric" required>
+        </div>
+        <button type="submit" class="btn-modal btn-send-form">Enviar Pedido</button>
+    </form>
+</div>
+
 
             <div id="modal-step-3" style="display:none;">
                 <div class="modal-icon success"><i class="fas fa-check-circle"></i></div>
