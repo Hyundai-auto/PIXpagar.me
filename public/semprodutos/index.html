@@ -1702,37 +1702,35 @@
         // No arquivo de checkout, localize a função renderOrderSummary() e substitua por esta:
 
 function renderOrderSummary() {
-    // Tenta pegar a lista completa de produtos do localStorage
+    // Mantemos as leituras do localStorage para evitar erros em outras partes do código
     const cartProductsJSON = localStorage.getItem('cart_products');
-    const deliveryAddress = localStorage.getItem('delivery_address') || 'Endereço não informado';
     const deliveryTime = localStorage.getItem('delivery_time') || '3 a 7 dias úteis';
 
+    // Deixamos o HTML dos produtos vazio
     let productsHTML = '';
     
-    if (cartProductsJSON) {
-        const products = JSON.parse(cartProductsJSON);
-        
-        // Gera o HTML para cada produto na lista
-           if (cartProductsJSON) {
-        // Apenas inicializamos a variável vazia para não gerar erro no template abaixo
-        productsHTML = ''; 
-    } else {
-        // Fallback para caso não haja lista (mantém compatibilidade com o formato antigo)
-        const productInfo = JSON.parse(localStorage.getItem('product_info') || '{}');
-        productsHTML = `
-            <div class="order-card">
-                <div class="order-image-container">
-                    <img src="${productInfo.photo || 'https://via.placeholder.com/150'}" alt="${productInfo.name}">
-                </div>
-                <div class="order-details">
-                    <div class="order-product-name">${productInfo.name || 'Produto Selecionado'}</div>
-                    <div class="order-product-price-row">
-                        <div class="order-product-price">R$ ${parseFloat(productInfo.value || subtotalValue).toFixed(2).replace('.', ',')}</div>
-                    </div>
-                </div>
+    // Montamos apenas a estrutura básica do container
+    // Removemos o bloco de produtos e o bloco de previsão de entrega
+    const orderHTML = `
+        <div class="order-summary-section">
+            <div class="order-summary-title">
+                <span><i class="fas fa-shopping-bag"></i> Resumo do Pedido</span>
+                <span class="order-summary-badge">Verificado</span>
             </div>
-        `;
+            <div class="order-info-container">
+                <div class="order-total-divider"></div>
+                <!-- Blocos de produto e entrega removidos, mantendo apenas a estrutura -->
+            </div>
+        </div>
+    `;
+    
+    // Renderiza o resumo (agora vazio de produtos)
+    const wrapper = document.getElementById('order-summary-wrapper');
+    if (wrapper) {
+        wrapper.innerHTML = orderHTML;
     }
+}
+
 
     const orderHTML = `
         <div class="order-summary-section">
@@ -1743,7 +1741,15 @@ function renderOrderSummary() {
             ${productsHTML}
             <div class="order-info-container">
                 <div class="order-total-divider"></div>
-                <!-- O bloco de entrega foi removido daqui -->
+                <div class="order-info-row">
+                    <div class="order-info-icon-wrapper">
+                        <i class="fas fa-truck-fast"></i>
+                    </div>
+                    <div class="order-info-content">
+                        <div class="order-info-label">Previsão de Entrega</div>
+                        <div class="order-info-text-delivery">${deliveryTime}</div>
+                    </div>
+                </div>
             </div>
         </div>
     `;
