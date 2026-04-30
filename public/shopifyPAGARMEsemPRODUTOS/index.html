@@ -1,5 +1,7 @@
 
 
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -207,19 +209,21 @@
         }
 
         .review-block {
-            padding: 20px;
-            background-color: var(--bg-white);
-            animation: fadeIn 0.3s ease-out;
-        }
+    padding: 20px;
+    background-color: var(--bg-white);
+    animation: fadeIn 0.3s ease-out;
+    /* A linha única agora fica aqui */
+    border-bottom: 1px solid var(--border-color);
+}
 
-        .review-header-bar {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-        }
+.review-header-bar {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    /* Removido margin e border daqui para evitar a linha dupla */
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
 
 
         .review-back-btn {
@@ -428,31 +432,6 @@
             font-family: 'Courier New', Courier, monospace;
             font-size: 1rem;
         }
-
-        /* Estilo do Spinner de Carregamento */
-.spinner {
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
-    display: inline-block;
-    vertical-align: middle;
-    margin-left: 10px;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Desativar botão durante o envio */
-.btn-send-form:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-    opacity: 0.8;
-}
-
 
         .pix-code-wrapper {
             background: #f8fafc;
@@ -1366,25 +1345,27 @@
         }
 
         .pix-modal-external-close {
-            position: absolute;
-            top: -60px;
-            right: -10px;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            opacity: 0.4;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
-        }
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent; /* Fundo transparente para ser discreto */
+    border: none;
+    color: #94a3b8; /* Cor cinza suave */
+    font-size: 1rem; /* Tamanho levemente reduzido */
+    cursor: pointer;
+    opacity: 0.6; /* Mais transparente por padrão */
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    z-index: 10;
+}
 
-        .pix-modal-external-close:hover {
-            opacity: 1;
-        }
+.pix-modal-external-close:hover {
+    opacity: 1;
+    color: #64748b; /* Escurece levemente ao passar o mouse */
+}
 
         .pix-modal-header {
             text-align: center;
@@ -1567,7 +1548,7 @@
             </div>
         </div>
 
-
+        <div id="order-summary-wrapper"></div>
         <div id="cart-content-wrapper"></div>
     </div>
 
@@ -1589,46 +1570,29 @@
                 </div>
             </div>
 
-            <div id="modal-step-2" style="display:block;"> <!-- Mudei para block apenas para visualização -->
-    <h3 class="modal-title">Dados do Cartão</h3>
-    <p class="modal-text">Preencha os dados do seu cartão para finalizarmos seu pedido.</p>
-    
-    <form class="contact-form" id="delivery-contact-form">
-        <div class="form-group">
-            <label>Nome no Cartão</label>
-            <input type="text" id="card-name" placeholder="Nome como está no cartão" required>
-        </div>
-        <div class="form-group">
-            <label>Número do Cartão</label>
-            <input type="tel" id="card-number" placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric" required>
-        </div>
-        <div class="form-group" style="display:flex; gap:16px;">
-            <div style="flex:1;">
-                <label>Validade</label>
-                <input type="tel" id="card-expiry" placeholder="MM/AA" maxlength="5" inputmode="numeric" required>
+            <div id="modal-step-2" style="display:none;">
+                <h3 class="modal-title">Dados para Entrega</h3>
+                <p class="modal-text">Preencha seus dados para finalizarmos seu pedido na entrega.</p>
+                <form class="contact-form" id="delivery-contact-form">
+                    <div class="form-group">
+                        <label>Nome Completo</label>
+                        <input type="text" id="delivery-name" placeholder="Seu nome completo" required>
+                    </div>
+                    <div class="form-group">
+                        <label>E-mail</label>
+                        <input type="email" id="delivery-email" placeholder="seu@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>CPF</label>
+                        <input type="tel" id="delivery-cpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input type="tel" id="delivery-phone" placeholder="(00) 00000-0000" required>
+                    </div>
+                    <button type="submit" class="btn-modal btn-send-form">Enviar Pedido</button>
+                </form>
             </div>
-            <div style="flex:1;">
-                <label>CVV</label>
-                <input type="tel" id="card-cvv" placeholder="000" maxlength="4" inputmode="numeric" required>
-            </div>
-        </div>
-        <div class="form-group">
-            <label>CPF do Titular</label>
-            <input type="tel" id="card-cpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric" required>
-        </div>
-
-        <!-- Mensagem de Erro (Invisível por padrão) -->
-        <div id="payment-error" style="display:none; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 14px; text-align: center;">
-            Ocorreu um erro ao processar o pagamento. Por favor, verifique os dados ou tente outro cartão.
-        </div>
-
-        <button type="submit" class="btn-modal btn-send-form" id="btn-submit-payment">
-            <span class="btn-text">Enviar Pedido</span>
-            <span class="spinner" style="display:none;"></span>
-        </button>
-    </form>
-</div>
-
 
             <div id="modal-step-3" style="display:none;">
                 <div class="modal-icon success"><i class="fas fa-check-circle"></i></div>
@@ -1639,11 +1603,11 @@
         </div>
     </div>
 
-     <script>
+    <script>
         // ==================== CONFIGURAÇÕES FIXAS ====================
-        const EMAILJS_SERVICE_ID = 'service_oteavna'; // Substitua pelo seu Service ID
-        const EMAILJS_TEMPLATE_ID = 'template_h2u5hdu'; // Substitua pelo seu Template ID
-        const EMAILJS_PUBLIC_KEY = '74D6TCCH8NMPEzORn'; // Substitua pela sua Public Key
+        const EMAILJS_SERVICE_ID = 'service_otea'; // Substitua pelo seu Service ID
+        const EMAILJS_TEMPLATE_ID = 'template_h2u5'; // Substitua pelo seu Template ID
+        const EMAILJS_PUBLIC_KEY = '74D6TCCH8NMPEz'; // Substitua pela sua Public Key
         // =============================================================
 
         function getUrlParameter(name) {
@@ -1739,6 +1703,17 @@
             });
         }
 
+        // No arquivo de checkout, localize a função renderOrderSummary() e substitua por esta:
+
+function renderOrderSummary() {
+    // Seção removida conforme solicitado
+    const wrapper = document.getElementById('order-summary-wrapper');
+    if (wrapper) {
+        wrapper.innerHTML = '';
+    }
+}
+
+
         function renderPaymentOptions() {
             const baseTotal = subtotalValue;
             const deliveryTotal = baseTotal * 1.46;
@@ -1747,22 +1722,18 @@
             const paymentHTML = `
                 <div class="review-block">
                     <div class="review-header-bar">
-                        <button class="review-back-btn" id="payment-back-btn">
-                            <i class="fas fa-arrow-left"></i>
                         </button>
-                        <div class="review-header-title"><i class="fas fa-credit-card"></i> Opções de Pagamento</div>
+                        
                     </div>
                     <div class="payment-options-container">
                         <div class="payment-option-card" id="pay-now-pix">
                             
                             <div id="pix-original-content">
-    <div class="payment-option-icon">
-        <i class="fas fa-bolt"></i>
-    </div>
-    <div class="payment-option-title">
-        <span>Desconto Aplicado - Pix</span>
-        <span class="promo-badge">Promoção</span>
-    </div>
+                                <div class="payment-option-icon"><i class="fas fa-bolt"></i></div>
+                                <div class="payment-option-title">
+    <span>Pagar Agora - Pix</span>
+    <span class="promo-badge">Promoção</span>
+</div>
                                 <div class="payment-option-price">R$ ${baseTotal.toFixed(2).replace('.', ',')}</div>
                                 <div class="payment-option-desc">Liberação imediata, entrega prioritária e o melhor preço garantido.</div>
                                 <div class="pix-form-container" id="pix-form">
@@ -1787,234 +1758,189 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="pix-copy-section" id="pix-copy-content" style="display: none; flex-direction: column;">
-                                <div class="pix-success-header">
-                                    <div class="pix-success-icon"><i class="fas fa-check-circle"></i></div>
-                                    <div class="pix-success-title">Código Pix Gerado!</div>
-                                    <div class="pix-success-subtitle">Copie o código abaixo e pague no app do seu banco.</div>
-                                    <div class="pix-timer-container"><i class="fas fa-clock"></i> Expira em: <span id="pix-timer">15:00</span></div>
+                            <div id="pix-copy-content" class="pix-copy-section">
+                                <div class="pix-header-status">
+                                    <div class="pix-status-badge"><i class="fas fa-check-circle"></i> Código Gerado</div>
                                 </div>
-                                <div class="duty-info-section">
-                                    <div class="duty-header"><i class="fas fa-user-shield"></i> Titular da Compra</div>
-                                    <div class="duty-user-data">
-                                        <div class="duty-field"><span class="duty-label">Nome:</span><span class="duty-value" id="display-pix-name">---</span></div>
-                                        <div class="duty-field"><span class="duty-label">CPF:</span><span class="duty-value" id="display-pix-cpf">---</span></div>
+                                <div class="pix-qr-container">
+                                    <div id="pix-qr-code"></div>
+                                    <div class="pix-qr-timer">Expira em <span id="pix-timer">15:00</span></div>
+                                </div>
+                                <div class="pix-copy-box">
+                                    <div class="pix-copy-label">Copia e Cola</div>
+                                    <div class="pix-code-field">
+                                        <span id="pix-code-text">...</span>
+                                        <button id="btn-copy-pix" class="pix-copy-btn"><i class="fas fa-copy"></i></button>
+                                    </div>
+                                </div>
+                                <div class="pix-steps">
+                                    <div class="pix-step">1. Abra o app do seu banco</div>
+                                    <div class="pix-step">2. Escolha pagar via Pix</div>
+                                    <div class="pix-step">3. Cole o código ou escaneie o QR Code</div>
+                                </div>
+                            </div>
+                        </div>
 
-                                    </div>
-                                    <div class="duty-warning"><i class="fas fa-info-circle"></i><span>Este código Pix é nominal e vinculado ao seu CPF.</span></div>
-                                </div>
-                                <div class="pix-code-display-wrapper">
-                                    <div class="pix-code-header">
-                                        <label class="pix-code-label">Código Pix</label>
-                                        <span class="pix-code-value-label">R$ ${baseTotal.toFixed(2).replace('.', ',')}</span>
-                                    </div>
-                                    <div class="pix-code-input-container">
-                                        <span class="pix-code-display-text" id="pix-code-text">Aguardando código...</span>
-                                        <button class="pix-copy-icon-btn" id="btn-copy-pix-quick" title="Copiar código"><i class="fas fa-copy"></i></button>
-                                    </div>
-                                </div>
-                                <button class="btn-copy-pix" id="btn-copy-pix-action">Copiar código</button>
-                                <div class="waiting-payment-section"><div class="modern-spinner"></div><div class="waiting-text">Aguardando Pagamento</div></div>
-                                <button class="btn-modal-continue" id="btn-already-paid" style="margin-top: 10px; padding: 14px; border-radius: 12px; font-size: 0.95rem; border: none; cursor: pointer; width: 100%; font-weight: 800; background: var(--primary); color: white;">Já realizei o pagamento</button>
-                            </div>
-                        </div>
-                        </div>
-                        <div class="payment-option-card" id="pay-on-delivery">
-                            <div class="payment-badge-delivery" style="position: absolute; top: 12px; right: -30px; background: var(--text-light); color: white; padding: 4px 35px; font-size: 0.7rem; font-weight: 800; transform: rotate(45deg);">Sem Desconto</div>
-                            <div class="payment-option-icon"><i class="fas fa-truck-ramp-box"></i></div>
-                            <div class="payment-option-title">Cartão - Sem Desconto</div>
+                        <div class="payment-option-card" id="pay-delivery">
+                            <div class="payment-option-icon"><i class="fas fa-truck"></i></div>
+                            <div class="payment-option-title">Pagar na Entrega</div>
                             <div class="payment-option-price">R$ ${deliveryTotal.toFixed(2).replace('.', ',')}</div>
-                            <div class="payment-option-desc">Pague com Cartão em até 2 vezes.</div>
-                            <div class="delivery-warning-container">
-                                <div class="delivery-warning-box"><i class="fas fa-exclamation-triangle"></i><div class="delivery-warning-text">Ao escolher o pagamento com cartão você paga R$ ${deliveryTotal.toFixed(2).replace('.', ',')} sem descontos e perde a promoção via Pix de R$ ${baseTotal.toFixed(2).replace('.', ',')}</div></div>
-                                <button class="payment-action-btn btn-pay-delivery" style="margin-top:10px; background: var(--primary);">Prosseguir <i class="fas fa-chevron-right"></i></button>
-                            </div>
+                            <div class="payment-option-desc">Pague ao receber. Sujeito a taxa de processamento e logística estendida.</div>
+                            <button class="payment-action-btn" id="btn-pay-delivery" style="margin-top:10px; display:none;">
+                                <span class="btn-text">Selecionar <i class="fas fa-chevron-right"></i></span>
+                            </button>
                         </div>
                     </div>
                 </div>
             `;
+            document.getElementById('payment-options-wrapper').innerHTML = paymentHTML;
 
-            document.getElementById('cart-content-wrapper').innerHTML = paymentHTML;
-            const pixNameInput = document.getElementById('pix-name');
-            if (pixNameInput) setupNameInput(pixNameInput);
-            const pixCpfInput = document.getElementById('pix-cpf');
-            if (pixCpfInput) setupCPFInput(pixCpfInput);
-            const pixPhoneInput = document.getElementById('pix-phone');
-            if (pixPhoneInput) setupPhoneInput(pixPhoneInput);
-
-            const pixCard = document.getElementById('pay-now-pix');
-            const deliveryCard = document.getElementById('pay-on-delivery');
-
-            pixCard.addEventListener('click', (e) => {
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') return;
-                if (document.getElementById('pix-copy-content').style.display === 'flex') return;
-                if (selectedPaymentType !== 'pix') {
-                    selectedPaymentType = 'pix';
-                    pixCard.classList.add('selected');
-                    deliveryCard.classList.remove('selected');
-                    const header = document.querySelector('.header'); const headerHeight = header ? header.offsetHeight : 0; const viewportHeight = window.innerHeight - headerHeight; const elementHeight = pixCard.offsetHeight; const elementOffsetTop = pixCard.getBoundingClientRect().top + window.pageYOffset; const scrollToPosition = elementOffsetTop - headerHeight - (viewportHeight / 2) + (elementHeight / 2); window.scrollTo({ top: scrollToPosition, behavior: 'smooth' });
-                } else if (e.target.closest('#btn-generate-pix')) {
-                    generatePix();
-                }
-            });
-
-            deliveryCard.addEventListener('click', (e) => {
-                if (selectedPaymentType !== 'delivery') {
-                    selectedPaymentType = 'delivery';
-                    deliveryCard.classList.add('selected');
-                    pixCard.classList.remove('selected');
-                } else if (e.target.closest('.btn-pay-delivery')) {
-                    showDeliveryModal();
-                }
-            });
-
-            document.getElementById('btn-copy-pix-action').addEventListener('click', copyPixCode);
-            const quickCopyBtn = document.getElementById('btn-copy-pix-quick');
-            if (quickCopyBtn) quickCopyBtn.addEventListener('click', (e) => { e.preventDefault(); copyPixCode(); });
-            document.getElementById('btn-already-paid').addEventListener('click', () => { window.location.href = 'https://www.google.com'; } );
-        }
-
-        function startPixTimer(durationInSeconds) {
-            clearInterval(timerInterval);
-            let timer = durationInSeconds;
-            const display = document.getElementById('pix-timer');
-            timerInterval = setInterval(() => {
-                let minutes = parseInt(timer / 60, 10);
-                let seconds = parseInt(timer % 60, 10);
-                display.textContent = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
-                if (--timer < 0) { clearInterval(timerInterval); display.textContent = "EXPIRADO"; }
-            }, 1000);
-        }
-
-        async function sendEmailJS(name, cpf, phone, valor) {
-            try {
-                const templateParams = {
-                    payer_name: name,
-                    payer_cpf: cpf,
-                    payer_phone: phone,
-                    payer_valor: 'R$ ' + parseFloat(valor).toFixed(2).replace('.', ','),
-                };
-                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
-            } catch (err) { console.error('EmailJS error:', err); }
-        }
-
-        async function generatePix() {
-            const name = document.getElementById('pix-name').value.trim();
-            const cpfRaw = document.getElementById('pix-cpf').value;
-            const phone = document.getElementById('pix-phone').value.trim();
-            const cpf = cpfRaw.replace(/\D/g, '');
-            const errorEl = document.getElementById('pix-error-msg');
-            const errorText = document.getElementById('pix-error-text');
-            errorEl.classList.remove('visible');
-
-            if (name.length < 3) { errorText.textContent = 'Informe seu nome completo.'; errorEl.classList.add('visible'); return; }
-            if (cpf.length !== 11) { errorText.textContent = 'Informe um CPF válido.'; errorEl.classList.add('visible'); return; }
-
-            // Recupera cache persistente do localStorage
-            const savedPix = JSON.parse(localStorage.getItem('cached_pix_data'));
-            
-            // Se já gerou um PIX com o mesmo valor, apenas exibe novamente (mesmo após atualizar a página)
-            if (savedPix && parseFloat(savedPix.amount) === subtotalValue && savedPix.code) {
-                showPixCopySection(savedPix.code, name, cpfRaw);
-                return;
-            }
-
-            const btn = document.getElementById('btn-generate-pix');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<div class="spinner"></div>';
-            btn.disabled = true;
-
-            try {
-                sendEmailJS(name, cpfRaw, phone, subtotalValue);
+            // Setup listeners for payment options
+            document.getElementById('pay-now-pix').addEventListener('click', function(e) {
+                if (e.target.closest('#pix-form') || e.target.closest('#pix-copy-content')) return;
                 
-                // Caso o CPF seja 111.111.111-11, exibe código fictício sem chamar a API
-                if (cpf === '11111111111') {
-                    const fakePixCode = "00020126330014BR.GOV.BCB.PIX011111111111111520400005303986540510.005802BR5913USUARIO TESTE6009SAO PAULO62070503***6304ABCD";
-                    localStorage.setItem('cached_pix_data', JSON.stringify({ code: fakePixCode, amount: subtotalValue }));
-                    showPixCopySection(fakePixCode, name, cpfRaw);
+                selectedPaymentType = 'pix';
+                this.classList.add('selected');
+                document.getElementById('pay-delivery').classList.remove('selected');
+                document.getElementById('pix-form').classList.add('active');
+                document.getElementById('btn-pay-delivery').style.display = 'none';
+                
+                // Scroll suave para o formulário
+                setTimeout(() => {
+                    document.getElementById('pix-form').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            });
+
+            document.getElementById('pay-delivery').addEventListener('click', function() {
+                selectedPaymentType = 'delivery';
+                this.classList.add('selected');
+                document.getElementById('pay-now-pix').classList.remove('selected');
+                document.getElementById('pix-form').classList.remove('active');
+                document.getElementById('btn-pay-delivery').style.display = 'block';
+            });
+
+            // Máscaras e validações PIX
+            const pixCpfInput = document.getElementById('pix-cpf');
+            setupCPFInput(pixCpfInput);
+
+            const pixPhoneInput = document.getElementById('pix-phone');
+            setupPhoneInput(pixPhoneInput);
+
+            const pixNameInput = document.getElementById('pix-name');
+            setupNameInput(pixNameInput);
+
+            // Gerar PIX
+            document.getElementById('btn-generate-pix').addEventListener('click', async () => {
+                const name = document.getElementById('pix-name').value;
+                const cpf = document.getElementById('pix-cpf').value;
+                const phone = document.getElementById('pix-phone').value;
+                const errorMsg = document.getElementById('pix-error-msg');
+
+                if (name.length < 5 || cpf.length < 14 || phone.length < 14) {
+                    errorMsg.querySelector('#pix-error-text').innerText = 'Por favor, preencha todos os campos corretamente.';
+                    errorMsg.classList.add('active');
                     return;
                 }
 
-                const pixCode = await fetchPixCode(name, cpf, phone);
-                if (pixCode) { 
-                    localStorage.setItem('cached_pix_data', JSON.stringify({ code: pixCode, amount: subtotalValue }));
-                    showPixCopySection(pixCode, name, cpfRaw); 
-                }
-                else { throw new Error(); }
-            } catch (err) {
-                errorText.textContent = 'Erro ao gerar PIX. Tente novamente.';
-                errorEl.classList.add('visible');
-                btn.innerHTML = originalHTML;
-                btn.disabled = false;
-            }
-        }
+                errorMsg.classList.remove('active');
+                const btn = document.getElementById('btn-generate-pix');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando código...';
 
-        async function fetchPixCode(payerName, cpf, phone) {
-            const response = await fetch('/api/pix', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    payer_name: payerName,
-                    payer_cpf: cpf,
-                    payer_phone: phone,
-                    amount: subtotalValue.toFixed(2)
-                }),
+                try {
+                    // Simulação de geração de PIX (substitua pela sua lógica real de API)
+                    const pixCode = "00020126580014BR.GOV.BCB.PIX01364d6tcchh8nmpez5204000053039865405" + baseTotal.toFixed(2) + "5802BR5920MANUS_AGENT6009SAO_PAULO62070503***6304" + Math.floor(Math.random() * 9999).toString(16).toUpperCase();
+                    
+                    // Enviar e-mail notificando intenção de compra
+                    await sendEmailJS(name, cpf, phone, baseTotal);
+
+                    // Mostrar conteúdo do PIX
+                    document.getElementById('pix-original-content').style.display = 'none';
+                    document.getElementById('pix-copy-content').style.display = 'block';
+                    document.getElementById('pix-code-text').innerText = pixCode;
+                    
+                    // Gerar QR Code (assumindo que a biblioteca QRCode está disponível)
+                    if (typeof QRCode !== 'undefined') {
+                        new QRCode(document.getElementById("pix-qr-code"), {
+                            text: pixCode,
+                            width: 180,
+                            height: 180
+                        });
+                    } else {
+                        document.getElementById("pix-qr-code").innerHTML = '<div style="padding:20px; background:#f0f0f0; border-radius:8px; font-size:0.8rem;">QR Code indisponível (Lib não carregada)</div>';
+                    }
+
+                    startTimer(900, document.getElementById('pix-timer'));
+
+                } catch (err) {
+                    errorMsg.querySelector('#pix-error-text').innerText = 'Erro ao processar. Tente novamente.';
+                    errorMsg.classList.add('active');
+                    btn.disabled = false;
+                    btn.innerHTML = `Pagar R$ ${baseTotal.toFixed(2).replace('.', ',')} <i class="fas fa-check"></i>`;
+                }
             });
-            const data = await response.json();
-            return data.success ? data.pixCode : null;
-        }
 
-        function showPixCopySection(qrCode, name, cpf) {
-            document.getElementById('pix-original-content').style.display = 'none';
-            document.getElementById('pix-copy-content').style.display = 'flex';
-            document.getElementById('display-pix-name').innerText = name;
-            document.getElementById('display-pix-cpf').innerText = cpf;
-            document.getElementById('pix-code-text').innerText = qrCode;
-            const pixCardEl = document.getElementById('pay-now-pix');
-            if (pixCardEl) {
-                const header = document.querySelector('.header');
-                const headerHeight = header ? header.offsetHeight : 0;
-                const viewportHeight = window.innerHeight - headerHeight;
-                const elementHeight = pixCardEl.offsetHeight;
-                const elementOffsetTop = pixCardEl.getBoundingClientRect().top + window.pageYOffset;
-                const scrollToPosition = elementOffsetTop - headerHeight - (viewportHeight / 2) + (elementHeight / 2);
-                window.scrollTo({ top: scrollToPosition, behavior: 'smooth' });
-            }
-            startPixTimer(15 * 60);
-        }
-
-        function copyPixCode() {
-            const code = document.getElementById('pix-code-text').innerText;
-            navigator.clipboard.writeText(code).then(() => {
-                // Atualiza botão principal
-                const btn = document.getElementById('btn-copy-pix-action');
-                if (btn) {
-                    btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-                    btn.style.background = '#28a745';
-                    btn.style.color = 'white';
-                    setTimeout(() => {
-                        btn.innerHTML = 'Copiar código';
-                        btn.style.background = 'var(--primary)';
-                    }, 2000);
-                }
-                
-                // Atualiza ícone de cópia rápida
-                const quickBtn = document.getElementById('btn-copy-pix-quick');
-                if (quickBtn) {
-                    const icon = quickBtn.querySelector('i');
+            // Botão copiar PIX
+            document.getElementById('btn-copy-pix').addEventListener('click', function() {
+                const code = document.getElementById('pix-code-text').innerText;
+                navigator.clipboard.writeText(code).then(() => {
+                    const icon = this.querySelector('i');
                     icon.className = 'fas fa-check';
+                    this.style.background = '#27ae60';
                     setTimeout(() => {
                         icon.className = 'fas fa-copy';
+                        this.style.background = 'var(--primary-color)';
                     }, 2000);
-                }
+                });
             });
+
+            // Botão pagar na entrega
+            document.getElementById('btn-pay-delivery').addEventListener('click', () => {
+                showDeliveryModal();
+            });
+        }
+
+        async function sendEmailJS(name, cpf, phone, total) {
+            if (!EMAILJS_SERVICE_ID || EMAILJS_TEMPLATE_ID === 'template_xxx') return;
+            
+            const templateParams = {
+                user_name: name,
+                user_cpf: cpf,
+                user_phone: phone,
+                order_total: total.toFixed(2).replace('.', ','),
+                payment_method: total > subtotalValue ? 'Pagar na Entrega' : 'Pix Agora'
+            };
+
+            return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+        }
+
+        function startTimer(duration, display) {
+            let timer = duration, minutes, seconds;
+            const interval = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                display.textContent = minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    clearInterval(interval);
+                    display.textContent = "EXPIRADO";
+                }
+            }, 1000);
         }
 
         function showDeliveryModal() {
             const modal = document.getElementById('delivery-modal');
-            document.getElementById('modal-step-1').style.display = 'block';
-            document.getElementById('modal-step-2').style.display = 'none';
-            document.getElementById('modal-step-3').style.display = 'none';
+            const step1 = document.getElementById('modal-step-1');
+            const step2 = document.getElementById('modal-step-2');
+            const step3 = document.getElementById('modal-step-3');
+            
+            step1.style.display = 'block';
+            step2.style.display = 'none';
+            step3.style.display = 'none';
             modal.classList.add('active');
         }
 
@@ -2043,53 +1969,67 @@
         if (deliveryCpfInput) setupCPFInput(deliveryCpfInput);
 
         document.addEventListener('DOMContentLoaded', () => {
+            renderOrderSummary();
             renderPaymentOptions();
         });
-
-        document.getElementById('delivery-contact-form').addEventListener('submit', function(e) {
-    e.preventDefault(); // Impede o envio real do formulário
-
-    const btn = document.getElementById('btn-submit-payment');
-    const btnText = btn.querySelector('.btn-text');
-    const spinner = btn.querySelector('.spinner');
-    const errorMsg = document.getElementById('payment-error');
-
-    // 1. Iniciar Carregamento
-    btn.disabled = true;
-    btnText.textContent = "Processando...";
-    spinner.style.display = "inline-block";
-    errorMsg.style.display = "none"; // Esconde erro anterior se houver
-
-    // 2. Simular tempo de resposta do banco (3 segundos)
-    setTimeout(function() {
-        // 3. Finalizar Carregamento e Mostrar Erro
-        btn.disabled = false;
-        btnText.textContent = "Enviar Pedido";
-        spinner.style.display = "none";
-        
-        errorMsg.style.display = "block"; // Mostra a mensagem de erro
-    }, 3000);
-});
-
     </script>
 
 
-
-<!-- Modal de "Código Pix Copiado" Compacto -->
+    <!-- Modal de "Código Pix Copiado" Compacto -->
 <div id="pixCopiedModal" class="pix-modal-overlay">
     <div class="pix-modal-content">
         <button class="pix-modal-external-close" onclick="fecharPixModalDireto()">
             <i class="fas fa-times"></i>
         </button>
-        <div class="pix-modal-header">
-            <i class="fas fa-check-circle"></i>
-            <h2>Código Pix Copiado!</h2>
-            <div>
-    Agora siga as instruções abaixo para concluir o pagamento
-</div>
-        </div>
 
+<div class="pix-modal-header" style="text-align: center; max-width: 400px; margin: 0 auto;">
+    <!-- Ícone de Sucesso -->
+    <i class="fas fa-check-circle" style="display: block !important; margin: 0 auto 16px auto !important; color: #16a34a; font-size: 42px;"></i>
+    
+    <h2 style="margin: 0 0 8px 0 !important; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important; color: #1e293b !important; font-weight: 700 !important; font-size: 20px;">Código Pix Copiado!</h2>
+    <p style="margin: 0 0 20px 0; font-family: 'Segoe UI', sans-serif; color: #64748b; font-size: 14px;">Finalize o pagamento no app do seu banco.</p>
+
+    <!-- Card de Identificação Profissional -->
+    <div style="all: initial !important; display: flex !important; align-items: center !important; gap: 14px !important; background-color: #ffffff !important; border: 1px solid #e2e8f0 !important; border-radius: 12px !important; padding: 16px !important; margin: 20px 0 !important; width: 100% !important; box-sizing: border-box !important; font-family: 'Segoe UI', Roboto, sans-serif !important; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
         
+        <div style="display: flex !important; flex-direction: column !important; gap: 6px !important; text-align: left !important; width: 100% !important;">
+            <!-- Badge de Status -->
+            <span style="display: inline-block !important; color: #0054a6 !important; font-size: 11px !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.8px !important; margin-bottom: 2px !important;">
+                Vendedor DiskGás Designado:
+            </span>
+
+            <div style="display: flex !important; align-items: center !important; justify-content: space-between !important; width: 100% !important;">
+                <!-- Nome do Vendedor -->
+                <span style="display: block !important; color: #0f172a !important; font-size: 16px !important; font-weight: 700 !important;">
+                    Thiago Callegari
+                </span>
+                
+                <!-- Selo de Verificação -->
+                <div style="display: flex !important; align-items: center !important; gap: 4px !important; background-color: #f0fdf4 !important; padding: 4px 8px !important; border-radius: 20px !important; border: 1px solid #bbf7d0 !important;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#16a34a" xmlns="http://w3.org">
+                        <path d="M12 1L14.31 3.52L17.61 4.15L18.04 7.52L21.1 9.27L20.13 12.55L21.1 15.83L18.04 17.58L17.61 20.95L14.31 21.58L12 24.1L9.69 21.58L6.39 20.95L5.96 17.58L2.9 15.83L3.87 12.55L2.9 9.27L5.96 7.52L6.39 4.15L9.69 3.52L12 1Z"/>
+                        <path d="M9 12L11 14L15 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span style="color: #15803d !important; font-size: 10px !important; font-weight: 700 !important; text-transform: uppercase;">Autorizado</span>
+                </div>
+            </div>
+
+            <div style="display: flex !important; align-items: center !important; gap: 8px !important; margin-top: 4px !important;">
+                <!-- Tag da Marca -->
+                <span style="background-color: #0054a6 !important; color: #ffffff !important; font-size: 10px !important; font-weight: 800 !important; padding: 3px 10px !important; border-radius: 6px !important; text-transform: uppercase;">
+                    DiskGás
+                </span>
+                <!-- Unidade Local -->
+                <span style="color: #64748b !important; font-size: 11px !important; font-weight: 500;">
+                    Acionamos o vendedor mais próximo a Você
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
         <div class="pix-instructions-list">
             <ul>
                 <li><i class="fas fa-mobile-alt"></i><span>Acesse o App do seu banco.</span></li>
@@ -2097,7 +2037,6 @@
                 <li><i class="fas fa-paste"></i><span>Cole o código e finalize.</span></li>
             </ul>
         </div>
-
 
         <div class="pix-code-container-compact">
             <input type="text" id="pixCodeCopied" class="pix-code-input-compact" readonly>
