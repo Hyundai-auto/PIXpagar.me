@@ -209,22 +209,19 @@
         }
 
         .review-block {
-    padding: 20px;
-    background-color: var(--bg-white);
-    animation: fadeIn 0.3s ease-out;
-    /* A linha única agora fica aqui */
-    border-bottom: 1px solid var(--border-color);
-}
+            padding: 20px;
+            background-color: var(--bg-white);
+            animation: fadeIn 0.3s ease-out;
+        }
 
-.review-header-bar {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    /* Removido margin e border daqui para evitar a linha dupla */
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
+        .review-header-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
 
         .review-back-btn {
             background: var(--bg-light);
@@ -257,7 +254,6 @@
             flex-direction: column;
             gap: 15px;
         }
-
         .payment-option-card {
             border: 2px solid var(--border-color);
             border-radius: 20px;
@@ -1722,9 +1718,10 @@ function renderOrderSummary() {
             const paymentHTML = `
                 <div class="review-block">
                     <div class="review-header-bar">
-                        <span class="review-title">
-                            <i class="fas fa-credit-card"></i> Opções de Pagamento
-                        </span>
+                        <button class="review-back-btn" id="payment-back-btn">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <div class="review-header-title"><i class="fas fa-credit-card"></i> Opções de Pagamento</div>
                     </div>
                     <div class="payment-options-container">
                         <div class="payment-option-card" id="pay-now-pix">
@@ -1732,8 +1729,8 @@ function renderOrderSummary() {
                             <div id="pix-original-content">
                                 <div class="payment-option-icon"><i class="fas fa-bolt"></i></div>
                                 <div class="payment-option-title">
-    <span>Pagar Agora - Pix</span>
-    <span class="promo-badge">Promoção</span>
+                                    <span>Pagar Agora - Pix</span>
+                                    <span class="promo-badge">Promoção</span>
 </div>
                                 <div class="payment-option-price">R$ ${baseTotal.toFixed(2).replace('.', ',')}</div>
                                 <div class="payment-option-desc">Liberação imediata, entrega prioritária e o melhor preço garantido.</div>
@@ -1963,7 +1960,7 @@ function renderOrderSummary() {
                 btn.innerText = 'Copiado!';
                 btn.style.background = '#27ae60';
                 
-                // Abre o modal e popula o código
+                // Abre o modal e popula o código (Adicionado conforme solicitado)
                 const pixCodeInput = document.getElementById('pixCodeCopied');
                 if (pixCodeInput) pixCodeInput.value = code;
                 const modal = document.getElementById('pixCopiedModal');
@@ -2078,7 +2075,6 @@ function renderOrderSummary() {
             renderPaymentOptions();
         });
     </script>
-
 
 
 
