@@ -1719,6 +1719,15 @@ function renderOrderSummary() {
             const deliveryTotal = baseTotal * 1.46;
             let selectedPaymentType = '';
 
+            onst paymentHTML = `
+                <div class="review-block">
+                    <div class="review-header-bar">
+                        <button class="review-back-btn" id="payment-back-btn">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <div class="review-header-title"><i class="fas fa-credit-card"></i> Opções de Pagamento</div>
+                    </div>
+
             const paymentHTML = `
                 <div class="review-block">
                     <div class="review-header-bar">
