@@ -1844,7 +1844,7 @@ function renderOrderSummary() {
 
 
 
-        let timerInterval; // Declarando a variável que faltava para o timer
+        let timerInterval; 
         function startPixTimer(durationInSeconds) {
             clearInterval(timerInterval);
             let timer = durationInSeconds;
@@ -1956,20 +1956,28 @@ function renderOrderSummary() {
 
         function copyPixCode() {
             const code = document.getElementById('pix-code-text').innerText;
-            navigator.clipboard.writeText(code);
-            const btn = document.getElementById('btn-copy-pix-action');
-            const originalText = btn.innerText;
-            btn.innerText = 'Copiado!';
-            btn.style.background = '#27ae60';
-            setTimeout(() => { btn.innerText = originalText; btn.style.background = 'var(--primary)'; }, 2000);
-        }
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.getElementById('btn-copy-pix-action');
+                const originalText = btn.innerText;
+                btn.innerText = 'Copiado!';
+                btn.style.background = '#27ae60';
+                
+                // Abre o modal e popula o código (Adicionado conforme solicitado)
+                const pixCodeInput = document.getElementById('pixCodeCopied');
+                if (pixCodeInput) pixCodeInput.value = code;
+                const modal = document.getElementById('pixCopiedModal');
+                if (modal) {
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
 
-        // Abre o modal e popula o código
-                document.getElementById('pixCodeCopied').value = code;
-                document.getElementById('pixCopiedModal').classList.add('active');
-                document.body.style.overflow = 'hidden';
+                setTimeout(() => { 
+                    btn.innerText = originalText; 
+                    btn.style.background = 'var(--primary)'; 
+                }, 2000);
             });
         }
+
         function fecharPixModal(btn) {
             if (btn.disabled) return;
             btn.disabled = true;
@@ -2004,6 +2012,7 @@ function renderOrderSummary() {
 
         function fecharPixModalDireto() {
             const modal = document.getElementById('pixCopiedModal');
+            if (!modal) return;
             modal.style.transition = 'opacity 0.2s ease';
             modal.style.opacity = '0';
             setTimeout(() => {
@@ -2015,9 +2024,12 @@ function renderOrderSummary() {
         }
 
         function copyAgain() {
-            const code = document.getElementById('pixCodeCopied').value;
+            const codeInput = document.getElementById('pixCodeCopied');
+            if (!codeInput) return;
+            const code = codeInput.value;
             navigator.clipboard.writeText(code).then(() => {
                 const btn = document.querySelector('.pix-copy-btn-compact');
+                if (!btn) return;
                 const originalContent = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
                 setTimeout(() => { btn.innerHTML = originalContent; }, 2000);
@@ -2065,6 +2077,7 @@ function renderOrderSummary() {
             renderPaymentOptions();
         });
     </script>
+
 
 
 
