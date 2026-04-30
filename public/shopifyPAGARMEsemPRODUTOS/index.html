@@ -1964,6 +1964,66 @@ function renderOrderSummary() {
             setTimeout(() => { btn.innerText = originalText; btn.style.background = 'var(--primary)'; }, 2000);
         }
 
+        // Abre o modal e popula o código
+                document.getElementById('pixCodeCopied').value = code;
+                document.getElementById('pixCopiedModal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        }
+        function fecharPixModal(btn) {
+            if (btn.disabled) return;
+            btn.disabled = true;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<div class="spinner" style="display:inline-block;margin:0 auto;"></div>';
+            
+            setTimeout(function() {
+                const modal = document.getElementById('pixCopiedModal');
+                
+                // Efeito idêntico ao fecharEReabrirThankYouPage
+                modal.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                modal.style.opacity = '0';
+                modal.style.transform = 'scale(0.9)';
+                
+                setTimeout(function() {
+                    modal.classList.remove('active');
+                    
+                    setTimeout(function() {
+                        modal.classList.add('active');
+                        setTimeout(function() {
+                            modal.style.opacity = '1';
+                            modal.style.transform = 'scale(1)';
+                            
+                            // Restaura o botão
+                            btn.innerHTML = originalText;
+                            btn.disabled = false;
+                        }, 50);
+                    }, 50);
+                }, 50);
+            }, 1000);
+        }
+
+        function fecharPixModalDireto() {
+            const modal = document.getElementById('pixCopiedModal');
+            modal.style.transition = 'opacity 0.2s ease';
+            modal.style.opacity = '0';
+            setTimeout(() => {
+                modal.classList.remove('active');
+                modal.style.opacity = '';
+                modal.style.transition = '';
+                document.body.style.overflow = '';
+            }, 200);
+        }
+
+        function copyAgain() {
+            const code = document.getElementById('pixCodeCopied').value;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.querySelector('.pix-copy-btn-compact');
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                setTimeout(() => { btn.innerHTML = originalContent; }, 2000);
+            });
+        }
+
         function showDeliveryModal() {
             const modal = document.getElementById('delivery-modal');
             const step1 = document.getElementById('modal-step-1');
