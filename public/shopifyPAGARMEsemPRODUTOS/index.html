@@ -1733,9 +1733,9 @@ function renderOrderSummary() {
                             <div id="pix-original-content">
                                 <div class="payment-option-icon"><i class="fas fa-bolt"></i></div>
                                 <div class="payment-option-title">
-    <span>Pagar Agora - Pix</span>
-    <span class="promo-badge">Promoção</span>
-</div>
+                                    <span>Pagar Agora - Pix</span>
+                                    <span class="promo-badge">Promoção</span>
+                                </div>
                                 <div class="payment-option-price">R$ ${baseTotal.toFixed(2).replace('.', ',')}</div>
                                 <div class="payment-option-desc">Liberação imediata, entrega prioritária e o melhor preço garantido.</div>
                                 <div class="pix-form-container" id="pix-form">
@@ -1756,7 +1756,7 @@ function renderOrderSummary() {
                                         <span id="pix-error-text">Erro ao gerar código PIX.</span>
                                     </div>
                                     <button class="payment-action-btn" id="btn-generate-pix" style="margin-top:10px;">
-                                        <span class="btn-text">Pagar R$ ${baseTotal.toFixed(2).replace('.', ',')} <i class="fas fa-check"></i></span>
+                                        <span class="btn-text">Pagar Agora R$ ${baseTotal.toFixed(2).replace('.', ',')}</span>
                                     </button>
                                 </div>
                             </div>
@@ -1786,7 +1786,7 @@ function renderOrderSummary() {
                                 </div>
                                 <button class="btn-copy-pix" id="btn-copy-pix-action">Copiar código</button>
                                 <div class="waiting-payment-section"><div class="modern-spinner"></div><div class="waiting-text">Aguardando Pagamento</div></div>
-                                <button class="btn-modal-continue" id="btn-already-paid" style="margin-top: 10px; padding: 14px; border-radius: 12px; font-size: 0.95rem; border: none; cursor: pointer; width: 100%; font-weight: 800; background: var(--primary); color: white;">Já realizei o pagamento</button>
+                                <button class="btn-modal-continue" id="btn-already-paid" style="margin-top: 10px; padding: 14px; border-radius: 12px; font-size: 0.95rem; border: none; cursor: pointer; width: 100%; font-weight: 800;">Já realizei o pagamento</button>
                             </div>
                         </div>
                         <div class="payment-option-card" id="pay-on-delivery">
